@@ -1,200 +1,399 @@
 # SkillHire – Skill-Based Reverse Internship Platform
 
-## 📌 Project Overview
+## 1. Project Overview
 
-SkillHire is a web-based **Skill-Based Reverse Internship Platform** designed to provide an alternative to traditional resume-based recruitment.
+SkillHire is a web-based Skill-Based Reverse Internship Platform designed to provide an alternative approach to traditional resume-based recruitment.
 
-In conventional recruitment, companies often depend on resumes, academic scores, and profile information to shortlist candidates. However, these details may not always represent a candidate's actual problem-solving ability or practical skills.
+In conventional recruitment, companies often depend on resumes, academic scores, and profile information to shortlist candidates. However, these details may not always represent a candidate's actual practical skills and problem-solving ability.
 
-SkillHire follows a **skill-first approach**, where candidates get an opportunity to demonstrate their abilities by solving practical, job-related tasks. Companies can then evaluate candidates based on their actual task performance.
+SkillHire follows a skill-first approach where candidates get an opportunity to demonstrate their abilities by solving practical, job-related tasks. Companies can then evaluate candidates based on their actual task performance.
 
-The platform integrates job posting, applications, task assignment, practical assessments, submissions, evaluation, and company-specific leaderboards into a single system.
+The platform integrates job posting, job applications, task assignment, practical assessments, submissions, evaluation, result processing, and company-specific leaderboards into a single system.
 
 ---
 
-## 🎯 Problem Statement
+## 2. Problem Statement
 
 Traditional internship and recruitment platforms mainly depend on resumes, academic performance, and profile-based screening.
 
-This can create a gap between a candidate's qualifications and their actual practical abilities. A candidate may have good academic credentials but may not be able to demonstrate the practical skills required for a particular role.
+This can create a gap between a candidate's qualifications and their actual practical abilities. A candidate may have good academic credentials but may not always be able to demonstrate the practical skills required for a particular role.
 
 The problem addressed by SkillHire is:
 
-> **How can candidates be evaluated based on their actual practical skills and problem-solving abilities instead of relying primarily on resumes and academic scores?**
+"How can candidates be evaluated based on their actual practical skills and problem-solving abilities instead of relying primarily on resumes and academic scores?"
 
 SkillHire addresses this problem by allowing companies to create practical tasks and enabling applicants to demonstrate their skills through structured assessments.
 
 ---
 
-## 💡 Proposed Solution
+## 3. Proposed Solution
 
-SkillHire provides a centralized platform where:
+SkillHire provides a centralized platform where students, companies, and administrators can interact through role-based portals.
 
-- Students can register and log in.
-- Companies can register and undergo verification.
-- Verified companies can create job postings.
-- Companies can create practical tasks for applicants.
-- Students can view available jobs and apply.
-- Candidates receive practical assessments.
-- Tasks are provided in **Easy, Medium, and Hard** difficulty levels.
-- Different task variants can be randomly assigned to candidates.
-- Assessments are time-bound.
-- Candidates can save their work through auto-save functionality.
-- Verification questions can be used to check conceptual understanding.
-- Candidates submit their solutions through the platform.
-- Companies review and evaluate submissions.
-- Candidate performance can be represented through a company-specific leaderboard.
-- Admins can monitor and manage the platform.
+Students can apply for job opportunities and demonstrate their skills through practical assessments. Companies can create job postings and job-specific tasks and evaluate candidate submissions. Administrators verify companies and manage the overall platform.
+
+The proposed system includes:
+
+- Student registration and login
+- Company registration and login
+- Admin authentication and management
+- Company verification
+- Job posting
+- Job applications
+- Practical task creation
+- Easy, Medium, and Hard difficulty levels
+- Randomized task variants
+- Time-bound assessments
+- Auto-save functionality
+- Verification questions
+- Candidate submissions
+- Company evaluation
+- Candidate status management
+- Company-specific leaderboards
+- Result processing
+- Centralized database management
 
 ---
 
-# 🔄 Reverse Internship Concept
+## 4. Reverse Internship Concept
 
 Traditional recruitment generally follows:
 
-**Resume → Shortlisting → Interview → Selection**
+Resume → Shortlisting → Interview → Selection
 
 SkillHire follows a skill-based approach:
 
-**Job → Practical Task → Skill Demonstration → Evaluation → Selection**
+Job Opportunity → Practical Task → Skill Demonstration → Evaluation → Selection
 
-The idea is to allow candidates to demonstrate their abilities directly through practical tasks relevant to the internship or job.
+The main idea is to allow candidates to demonstrate their abilities directly through practical tasks relevant to the internship or job.
+
+Instead of depending only on a candidate's resume or academic profile, companies can use practical task performance as an additional basis for evaluation.
 
 ---
 
-# 🏗️ System Architecture
+# 5. System Architecture
 
-The overall architecture of SkillHire can be represented as:
+The SkillHire system follows a layered web application architecture.
+
+The major components of the architecture are:
+
+1. User Layer
+2. Authentication and Role-Based Access Layer
+3. Flask Backend Layer
+4. Application Modules
+5. Assessment and Evaluation Layer
+6. Database Layer
+
+### 5.1 Architecture Diagram
 
 ```text
-                ┌──────────────────────┐
-                │       Users          │
-                │ Student / Company    │
-                │       / Admin        │
-                └──────────┬───────────┘
-                           │
+                         ┌─────────────────────────┐
+                         │         USERS           │
+                         │                         │
+                         │ Student | Company |     │
+                         │ Admin                   │
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │ Authentication &        │
+                         │ Role-Based Access       │
+                         │ Control                 │
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │      FLASK BACKEND      │
+                         │       Python            │
+                         └────────────┬────────────┘
+                                      │
+             ┌────────────────────────┼────────────────────────┐
+             │                        │                        │
+             ▼                        ▼                        ▼
+     ┌────────────────┐      ┌────────────────┐      ┌────────────────┐
+     │ Student Module │      │ Company Module │      │  Admin Module  │
+     │                │      │                │      │                │
+     │ • Jobs         │      │ • Jobs         │      │ • Verification │
+     │ • Applications │      │ • Tasks        │      │ • Users        │
+     │ • Tasks        │      │ • Candidates   │      │ • Monitoring   │
+     │ • Submissions  │      │ • Evaluation   │      │ • Analytics    │
+     └───────┬────────┘      └───────┬────────┘      └───────┬────────┘
+             │                       │                       │
+             └───────────────────────┼───────────────────────┘
+                                     │
+                                     ▼
+                         ┌─────────────────────────┐
+                         │ Job & Task Management   │
+                         │                         │
+                         │ • Job Posting           │
+                         │ • Job Application       │
+                         │ • Task Creation         │
+                         │ • Task Configuration    │
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │ Task Assignment         │
+                         │ & Random Variant        │
+                         │ Selection               │
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │ Practical Assessment    │
+                         │                         │
+                         │ Easy | Medium | Hard    │
+                         │                         │
+                         │ Time Limit + Auto-Save  │
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │ Submission &            │
+                         │ Verification            │
+                         │                         │
+                         │ • Solutions             │
+                         │ • Verification Questions│
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │ Company Evaluation      │
+                         │                         │
+                         │ Pending                 │
+                         │ Shortlisted             │
+                         │ Selected                │
+                         │ Rejected                │
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │ Results & Company       │
+                         │ Specific Leaderboard    │
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │      SQLite Database    │
+                         │                         │
+                         │ Users                   │
+                         │ Jobs                    │
+                         │ Tasks                   │
+                         │ Assignments             │
+                         │ Submissions             │
+                         │ Evaluations             │
+                         │ Applications             │
+                         └─────────────────────────┘
+
+5.2 Architecture Components
+User Layer
+
+The system supports three major user roles:
+
+Student
+Company
+Admin
+
+Each role has separate functionality and permissions.
+
+Authentication Layer
+
+The authentication layer manages:
+
+Registration
+Login
+Logout
+Password verification
+User sessions
+Role-based access
+
+Flask sessions are used to maintain the authenticated user's information.
+
+Flask Backend
+
+Python Flask acts as the central backend framework.
+
+It handles:
+
+HTTP requests
+User authentication
+Database operations
+Job management
+Task management
+Assignment creation
+Submission handling
+Evaluation workflow
+Result processing
+Student Module
+
+The Student module allows candidates to:
+
+Register
+Login
+View available jobs
+Apply for jobs
+View assigned tasks
+Start assessments
+Solve practical tasks
+Save progress
+Submit solutions
+Answer verification questions
+View submission status
+Company Module
+
+The Company module allows companies to:
+
+Register
+Login
+Complete company verification
+Create job postings
+Create practical tasks
+Configure difficulty levels
+Assign tasks
+View candidate submissions
+Evaluate candidates
+Shortlist candidates
+Select candidates
+Reject candidates
+View company-specific leaderboard
+Admin Module
+
+The Admin module provides platform-level control.
+
+The administrator can:
+
+Verify companies
+Manage users
+Monitor the platform
+View platform-level information
+Manage company access
+
+The Admin does not perform the technical evaluation of student submissions.
+
+Assessment Layer
+
+The assessment layer manages:
+
+Task assignment
+Randomized task variants
+Difficulty levels
+Time limits
+Auto-save
+Verification questions
+Candidate submissions
+Evaluation Layer
+
+The evaluation layer allows companies to review candidate submissions and update candidate status.
+
+Possible statuses include:
+
+Pending
+Shortlisted
+Selected
+Rejected
+Database Layer
+
+SQLite is used as the central database.
+
+It stores information related to users, jobs, applications, tasks, assignments, submissions, verification questions, evaluations, and other platform operations.
+
+6. System Workflow
+
+The complete workflow of SkillHire is:
+
+                         START
+                           |
                            ▼
-                ┌──────────────────────┐
-                │ Authentication &     │
-                │ Role-Based Access    │
-                └──────────┬───────────┘
-                           │
+              Student / Company Registration
+                           |
                            ▼
-                ┌──────────────────────┐
-                │    Flask Backend     │
-                │   Python Application │
-                └──────────┬───────────┘
-                           │
-             ┌─────────────┼─────────────┐
-             │             │             │
-             ▼             ▼             ▼
-       ┌──────────┐  ┌──────────┐  ┌──────────┐
-       │ Student  │  │ Company  │  │  Admin   │
-       │ Module   │  │ Module   │  │ Module   │
-       └────┬─────┘  └────┬─────┘  └────┬─────┘
-            │             │             │
-            └─────────────┼─────────────┘
-                          ▼
-                ┌──────────────────────┐
-                │ Job & Task Management│
-                └──────────┬───────────┘
-                           │
+                  Login & Authentication
+                           |
                            ▼
-                ┌──────────────────────┐
-                │ Task Assignment &    │
-                │ Random Variants      │
-                └──────────┬───────────┘
-                           │
-                           ▼
-                ┌──────────────────────┐
-                │ Practical Assessment │
-                │ Easy / Medium / Hard │
-                └──────────┬───────────┘
-                           │
-                           ▼
-                ┌──────────────────────┐
-                │ Submission &         │
-                │ Verification         │
-                └──────────┬───────────┘
-                           │
-                           ▼
-                ┌──────────────────────┐
-                │ Evaluation & Results │
-                └──────────┬───────────┘
-                           │
-                           ▼
-                ┌──────────────────────┐
-                │ Company-Specific     │
-                │ Leaderboard          │
-                └──────────┬───────────┘
-                           │
-                           ▼
-                ┌──────────────────────┐
-                │    SQLite Database   │
-                └──────────────────────┘
-🔁 System Workflow
-Start
-  ↓
-Student / Company Registration
-  ↓
-Login & Authentication
-  ↓
-Role-Based Access
-  ↓
-Admin Verifies Company
-  ↓
-Company Creates Job
-  ↓
-Company Creates Practical Tasks
-  ↓
-Student Views Available Jobs
-  ↓
-Student Applies
-  ↓
-Task Assignment
-  ↓
-Random Task Variant Selection
-  ↓
-Easy / Medium / Hard Assessment
-  ↓
-Time-Bound Task Solving
-  ↓
-Submission
-  ↓
-Verification Questions
-  ↓
-Company Evaluation
-  ↓
-Result Processing
-  ↓
-Company-Specific Leaderboard
-  ↓
-Selection / Rejection
-  ↓
-End
-👥 User Modules
-1. Student Module
+                Role-Based Access Control
+                           |
+              ┌────────────┼────────────┐
+              │            │            │
+              ▼            ▼            ▼
+          STUDENT       COMPANY       ADMIN
+              │            │            │
+              │            ▼            ▼
+              │      Company Registration
+              │            │
+              │            ▼
+              │      Admin Verification
+              │            │
+              │            ▼
+              │      Job & Task Creation
+              │            │
+              ▼            │
+        View Available Jobs│
+              │            │
+              ▼            │
+          Apply for Job    │
+              │            │
+              └──────┬─────┘
+                     │
+                     ▼
+               Task Assignment
+                     │
+                     ▼
+           Random Variant Selection
+                     │
+                     ▼
+        ┌────────────────────────────┐
+        │      PRACTICAL TEST        │
+        │                            │
+        │ Easy → Medium → Hard       │
+        │                            │
+        │ Time-Bound + Auto-Save     │
+        └─────────────┬──────────────┘
+                      │
+                      ▼
+                  Submission
+                      │
+                      ▼
+             Verification Questions
+                      │
+                      ▼
+              Company Evaluation
+                      │
+                      ▼
+              Result Processing
+                      │
+                      ▼
+          Company-Specific Leaderboard
+                      │
+                      ▼
+             Selected / Rejected
+                      │
+                      ▼
+                     END
+7. User Modules
+
+7.1 Student Module
 
 Students can:
 
 Register on the platform.
-Log in securely.
+Login securely.
 View available job postings.
 Apply for opportunities.
-Access assigned assessments.
-Solve practical tasks.
-Attempt Easy, Medium, and Hard tasks.
+View assigned assessments.
+Access practical tasks.
+Solve Easy, Medium, and Hard tasks.
 Work within the given time limit.
 Save their progress automatically.
 Answer verification questions.
-Submit completed solutions.
-View submission/result status.
-2. Company Module
+Submit solutions.
+View submission and result status.
+
+7.2 Company Module
 
 Companies can:
 
 Register on the platform.
-Log in using company credentials.
+Login using company credentials.
 Submit company information for verification.
 Create job postings after verification.
 Create practical assessment tasks.
@@ -203,9 +402,11 @@ Assign tasks to candidates.
 View candidate submissions.
 Evaluate candidate solutions.
 Shortlist candidates.
-Select or reject candidates.
+Select candidates.
+Reject candidates.
 View candidate performance through the company-specific leaderboard.
-3. Admin Module
+
+7.3 Admin Module
 
 The Admin module provides platform-level management.
 
@@ -213,89 +414,123 @@ The administrator can:
 
 Verify company registrations.
 Manage platform users.
-Monitor platform activity.
-View platform-level information and analytics.
-Control company access to recruitment features.
+Monitor the platform.
+View platform-level analytics.
+Control company access to recruitment functionality.
 
-The Admin does not perform the candidate's technical evaluation; candidate submissions are handled through the company evaluation process.
+The Admin does not perform technical evaluation of candidate submissions.
 
-📝 Task-Based Assessment
+8. Job Posting and Application Module
 
-One of the main features of SkillHire is practical task-based assessment.
+Verified companies can create internship or job opportunities.
 
-Companies can create tasks based on the skills required for a particular internship or job.
+A job posting can be associated with practical tasks that candidates must complete during the recruitment process.
 
-Tasks can be organized into:
+Students can:
+
+View available job postings.
+Select a suitable opportunity.
+Apply for the opportunity.
+Receive access to the required assessment.
+Complete the assigned task.
+
+This connects the job application process directly with practical skill assessment.
+
+9. Task Management Module
+
+Companies can create practical tasks based on the skills required for a particular job or internship.
+
+Tasks can be organized into three difficulty levels:
 
 Easy
-  ↓
 Medium
-  ↓
 Hard
 
-This allows candidates to demonstrate their abilities at multiple difficulty levels.
+The task management system supports the creation and assignment of different task variants.
 
-🎲 Randomized Task Variants
+10. Randomized Task Variants
 
-The system supports multiple variants of a task.
+SkillHire supports multiple variants for practical tasks.
 
-For example:
+The structure can be represented as:
 
 Task
- ├── Easy
- │    ├── Variant 1
- │    ├── Variant 2
- │    └── Variant 3
- │
- ├── Medium
- │    ├── Variant 1
- │    ├── Variant 2
- │    └── Variant 3
- │
- └── Hard
-      ├── Variant 1
-      ├── Variant 2
-      └── Variant 3
+│
+├── Easy
+│   ├── Variant 1
+│   ├── Variant 2
+│   └── Variant 3
+│
+├── Medium
+│   ├── Variant 1
+│   ├── Variant 2
+│   └── Variant 3
+│
+└── Hard
+    ├── Variant 1
+    ├── Variant 2
+    └── Variant 3
 
-When an assessment is assigned, the system can randomly select a variant from each available difficulty level.
+When a candidate starts an assessment, the system randomly selects an available variant from each difficulty level.
 
-This helps provide different task versions to candidates and can reduce direct copying between submissions.
+This provides different task versions to candidates and helps reduce direct copying between submissions.
 
-⏱️ Time-Bound Assessments
+11. Practical Assessment
 
-Each assessment can have a configured time limit.
+Candidates solve practical tasks instead of being evaluated only through their resumes or academic information.
 
-When a candidate starts an assessment, the system creates a deadline for the assignment.
+The assessment contains:
 
-The candidate must submit the solution before the deadline.
+Easy-level task
+Medium-level task
+Hard-level task
+Time limit
+Candidate solution fields
+Verification questions
+Submission functionality
 
-This provides a structured assessment environment and ensures that the assessment is completed within the defined time period.
+The assessment is designed to evaluate practical problem-solving and understanding.
 
-💾 Auto-Save
+12. Time-Bound Assessment
 
-SkillHire includes an auto-save mechanism for candidate solutions.
+Each task can have a configured time limit.
 
-The candidate's work can be periodically stored in the database while the assessment is in progress.
+When a candidate starts an assessment:
 
-This helps reduce the possibility of losing work because of:
+The system identifies the configured time limit.
+A deadline is generated for the assignment.
+The candidate works on the assigned tasks.
+The candidate must submit before the deadline.
+Submission after the deadline is restricted.
 
-Browser issues
+This provides a structured assessment environment.
+
+13. Auto-Save Functionality
+
+SkillHire provides an auto-save mechanism for candidate solutions.
+
+Candidate progress can be stored periodically while the assessment is in progress.
+
+Auto-save helps reduce the possibility of losing work because of:
+
 Accidental refresh
+Browser issues
 Temporary interruptions
 Connectivity problems
-❓ Verification Questions
 
-The platform can include verification questions after the practical task.
+14. Verification Questions
 
-These questions are intended to check whether the candidate understands the solution and the concepts used while solving the task.
+Verification questions are used as an additional layer of assessment.
 
-This provides an additional layer of assessment beyond simply receiving a submitted solution.
+After completing the practical task, candidates may be required to answer questions related to their solution.
 
-📤 Submission & Evaluation
+This helps check whether the candidate understands the concepts and approach used in their submission.
 
-After completing the assessment, candidates submit their solutions through the platform.
+15. Submission Module
 
-The submission process stores:
+Candidates submit their solutions through the platform.
+
+The submission process handles:
 
 Easy-level solution
 Medium-level solution
@@ -303,53 +538,79 @@ Hard-level solution
 Complete submission
 Assignment information
 
-Companies can then review the submitted solutions and evaluate candidates.
+The submitted information is stored in the database and made available for company evaluation.
 
-The current implementation uses a manual/hybrid evaluation approach, providing a foundation for future automated evaluation.
+16. Evaluation Module
 
-🏆 Company-Specific Leaderboard
+Companies can review candidate submissions through their dashboard.
 
-SkillHire provides a leaderboard for candidate performance within a company's assessment.
+The current system follows a manual/hybrid evaluation approach.
 
-The leaderboard can be used to compare candidates based on their assessment performance.
+Companies can review solutions and update candidate status.
 
-The leaderboard is associated with the respective company rather than being a single global ranking across all companies.
+The candidate workflow includes:
 
-🔐 Authentication & Role-Based Access Control
+Pending
+   ↓
+Shortlisted
+   ↓
+Selected
 
-The platform supports separate access for:
+or
+
+Pending
+   ↓
+Rejected
+
+Fully automated code evaluation is not part of the current implementation and can be added as a future enhancement.
+
+17. Company-Specific Leaderboard
+
+The platform generates a leaderboard based on candidate performance for a company's assessment.
+
+The leaderboard allows companies to compare candidates participating in their assessment.
+
+The ranking is company-specific rather than being a single global ranking across the platform.
+
+18. Authentication and Security
+
+SkillHire uses role-based authentication.
+
+The three major roles are:
 
 Student
 Company
 Admin
 
-Role-based access ensures that each type of user accesses only the features relevant to their role.
+The backend verifies the user's role before allowing access to role-specific routes.
 
-For example:
+The system also uses password hashing for storing user passwords securely.
 
-Student → Jobs, Applications, Tasks, Submissions
+Flask sessions maintain information such as:
 
-Company → Jobs, Tasks, Candidates, Evaluation
+User ID
+User role
+User name
 
-Admin → Verification, User Management, Monitoring
+This allows the application to identify authenticated users during their session.
 
-Flask sessions are used to maintain authenticated user information.
+19. Company Verification
 
-🏢 Company Verification
-
-When a company registers, its verification status is initially set to:
+When a company registers, its verification status is initially stored as:
 
 Pending
 
-The administrator can verify the company before allowing it to use recruitment functionality.
+The administrator can review and verify the company.
 
-This provides an additional control layer for company participation on the platform.
+After successful verification, the company can access recruitment functionality such as job and task creation.
 
-🗄️ Database
+This provides an additional level of control over company participation.
 
-SkillHire uses SQLite as its database.
+20. Database Design
 
-The project database contains tables supporting the major platform operations, including:
+SkillHire uses SQLite as the database management system.
+
+The current project database contains tables including:
 
 users
 tasks
@@ -363,10 +624,34 @@ activity_logs
 job_postings
 job_applications
 task_invitations
+Main Database Relationships
+Users
+ │
+ ├──────────────► Job Postings
+ │                     │
+ │                     ▼
+ │               Job Applications
+ │                     │
+ │                     ▼
+ │                   Tasks
+ │                     │
+ │                     ▼
+ │               Task Variants
+ │                     │
+ │                     ▼
+ │                Assignments
+ │                     │
+ │                     ▼
+ │                Submissions
+ │                     │
+ │                     ▼
+ │                Evaluations
+ │                     │
+ │                     ▼
+ │                 Results
 
-The database stores information related to users, companies, jobs, tasks, assignments, submissions, and evaluations.
 
-🛠️ Technology Stack
+21. Technology Stack
 Frontend
 HTML5
 CSS3
@@ -377,7 +662,7 @@ Python
 Flask
 Database
 SQLite
-Authentication & Security
+Authentication and Security
 Flask Sessions
 Password Hashing
 Role-Based Access Control
@@ -388,99 +673,118 @@ GitHub
 Python Virtual Environment
 Operating Environment
 Windows
-📚 Methodology
+
+
+22. Methodology
 
 The development methodology consists of the following stages:
 
-1. User Registration & Authentication
+Stage 1 – User Registration and Authentication
 
 Students and companies register and log in according to their roles.
 
-2. Company Verification
+Stage 2 – Company Verification
 
 Registered companies are verified by the administrator.
 
-3. Job Posting
+Stage 3 – Job Posting
 
-Verified companies create internship/job opportunities.
+Verified companies create internship and job opportunities.
 
-4. Task Creation
+Stage 4 – Task Creation
 
-Companies create practical tasks with different difficulty levels.
+Companies create practical tasks and define their difficulty levels.
 
-5. Application & Assignment
+Stage 5 – Application
 
-Students apply for opportunities and receive relevant assessments.
+Students browse job opportunities and apply for suitable positions.
 
-6. Random Variant Selection
+Stage 6 – Task Assignment
 
-The system assigns available task variants to candidates.
+Candidates receive practical assessments associated with the job opportunity.
 
-7. Practical Assessment
+Stage 7 – Random Variant Selection
 
-Candidates solve the assigned Easy, Medium, and Hard tasks within the given time limit.
+The system randomly selects available task variants.
 
-8. Submission & Verification
+Stage 8 – Practical Assessment
 
-Candidates submit their solutions and answer verification questions where applicable.
+Candidates solve Easy, Medium, and Hard tasks within the configured time limit.
 
-9. Evaluation
+Stage 9 – Submission
+
+Candidates submit their solutions through the platform.
+
+Stage 10 – Verification
+
+Verification questions may be used to validate candidate understanding.
+
+Stage 11 – Evaluation
 
 Companies review and evaluate candidate submissions.
 
-10. Results & Leaderboard
+Stage 12 – Result Processing
 
-Candidate performance is processed and displayed through company-specific results and leaderboards.
+Candidate statuses and evaluation results are updated.
 
-🎯 Objectives
+Stage 13 – Leaderboard
+
+Candidate performance is represented through a company-specific leaderboard.
+
+23. Objectives
 
 The main objectives of SkillHire are:
 
 Evaluate candidates based on practical skills.
 Reduce excessive dependence on resume-based screening.
-Provide companies with job-specific skill assessments.
-Enable candidates to demonstrate real-world problem-solving abilities.
+Provide companies with job-specific practical assessments.
+Allow candidates to demonstrate real-world problem-solving abilities.
 Improve the structure and transparency of internship recruitment.
 Provide randomized and time-bound assessments.
-Integrate the complete recruitment and assessment process into one platform.
-⭐ Key Features
+Integrate recruitment and assessment processes into a single platform.
+
+24. Key Features
 Skill-based recruitment
 Reverse internship model
-Student and company portals
-Admin verification
+Student portal
+Company portal
+Admin portal
+Company verification
 Role-based authentication
 Job posting
-Job application
+Job applications
 Practical task creation
-Easy / Medium / Hard assessments
+Easy / Medium / Hard tasks
 Randomized task variants
 Time-bound assessments
 Auto-save
 Verification questions
 Candidate submissions
 Company evaluation
-Shortlist / Select / Reject workflow
+Candidate status management
 Company-specific leaderboard
 Centralized database
-🌱 Benefits
-For Students
+
+25. Benefits
+Benefits for Students
 Opportunity to demonstrate practical skills.
 Direct participation in skill-based assessments.
 Reduced dependence on resume presentation alone.
 Exposure to practical job-related tasks.
-Transparent assessment workflow.
-For Companies
-Ability to create job-specific tasks.
+Structured assessment workflow.
+Benefits for Companies
+Ability to create job-specific practical tasks.
 Direct access to candidate submissions.
 Practical skill assessment.
 Structured candidate evaluation.
-Candidate comparison through leaderboards.
-For Administrators
+Candidate comparison through company-specific leaderboards.
+Benefits for Administrators
 Centralized platform management.
 Company verification.
 User management.
 Platform monitoring.
-🌍 Impact
+
+26. Impact
 
 SkillHire aims to create a more practical recruitment environment by connecting internship opportunities with direct skill demonstration.
 
@@ -491,10 +795,13 @@ Provide students with opportunities to demonstrate practical abilities.
 Help companies assess candidates using job-related tasks.
 Reduce the gap between theoretical knowledge and practical requirements.
 Streamline internship recruitment and assessment.
-📊 Feasibility
+
+27. Feasibility
 Technical Feasibility
 
 The system is developed using commonly available technologies such as Python, Flask, HTML, CSS, JavaScript, and SQLite.
+
+These technologies are suitable for developing and testing the current web-based prototype.
 
 Economic Feasibility
 
@@ -506,33 +813,34 @@ The platform provides separate interfaces for students, companies, and administr
 
 Scalability
 
-The current version is designed as a prototype using SQLite. The architecture can later be extended using a production database and cloud infrastructure.
+The current version uses SQLite and is designed as a prototype. The system can later be extended using a production database and cloud infrastructure.
 
-💻 System Requirements
-Hardware
-Computer/Laptop
+28. System Requirements
+Hardware Requirements
+Computer or Laptop
 Minimum 4 GB RAM
-Internet connection for development/deployment activities
-Software
+Internet connection for development and deployment activities
+Software Requirements
 Python 3.x
 Flask
 Visual Studio Code
 Git
 Web Browser
 SQLite
-📁 Project Structure
+
+29. Project Structure
 skill_hire/
 │
 ├── templates/
-│   ├── admin templates
-│   ├── student templates
-│   ├── company templates
-│   └── assessment templates
+│   ├── Admin templates
+│   ├── Student templates
+│   ├── Company templates
+│   └── Assessment templates
 │
 ├── static/
 │   ├── CSS
 │   ├── JavaScript
-│   └── other static files
+│   └── Other static files
 │
 ├── app.py
 ├── database.py
@@ -546,32 +854,34 @@ skill_hire/
 ├── README.md
 ├── .gitignore
 │
-└── database files
+└── Database files
 
-Local database files, virtual environments, environment files, and other sensitive/local files are excluded from Git using .gitignore.
+Local database files, virtual environments, environment files, cache files, logs, and temporary tunnel files are excluded from Git using .gitignore.
 
-🚀 How to Run the Project
-1. Clone the Repository
+30. How to Run the Project
+Step 1 – Clone the Repository
 git clone https://github.com/Shreep07/Skill-based-reverse-internship-platform.git
-2. Open the Project
+Step 2 – Open the Project
 cd Skill-based-reverse-internship-platform
-3. Create a Virtual Environment
+Step 3 – Create a Virtual Environment
 python -m venv venv
-4. Activate the Virtual Environment
-Windows PowerShell
+Step 4 – Activate the Virtual Environment
+
+For Windows PowerShell:
+
 venv\Scripts\Activate.ps1
-Windows Command Prompt
+
+For Windows Command Prompt:
+
 venv\Scripts\activate
-5. Install Flask
+Step 5 – Install Flask
 pip install flask
-
-If additional dependencies are added to the project in the future, install them before running the application.
-
-6. Run the Application
+Step 6 – Run the Application
 python app.py
-7. Open in Browser
+Step 7 – Open the Application
 http://127.0.0.1:5000
-🔒 Data & Security Considerations
+
+31. Data and Security Considerations
 
 The project uses .gitignore to prevent local and sensitive files from being uploaded to GitHub.
 
@@ -585,9 +895,9 @@ IDE files
 Logs
 Temporary tunnel files
 
-This prevents local database information and environment-specific files from being unnecessarily exposed in the public repository.
+This helps prevent local database information and environment-specific files from being unnecessarily exposed in the public repository.
 
-⚠️ Current Limitations
+32. Current Limitations
 
 The current version of SkillHire has some limitations:
 
@@ -597,10 +907,8 @@ Advanced plagiarism detection is not implemented.
 SQLite is used as the current database for the prototype.
 Advanced AI-based candidate evaluation is not currently implemented.
 The current system is primarily designed as a prototype and can be extended for production deployment.
-🔮 Future Enhancements
 
-Possible future improvements include:
-
+33. Future Enhancements
 AI-Based Evaluation
 
 Introduce automated evaluation of candidate solutions using AI and rule-based assessment techniques.
@@ -611,7 +919,7 @@ Recommend suitable candidates to companies based on demonstrated skills and asse
 
 Advanced Plagiarism Detection
 
-Introduce more advanced similarity and plagiarism detection mechanisms for candidate submissions.
+Introduce advanced similarity and plagiarism detection mechanisms for candidate submissions.
 
 Video Interviews
 
@@ -629,40 +937,42 @@ Production Database
 
 Migrate from SQLite to a production database such as PostgreSQL or MySQL for larger deployments.
 
-🔍 Difference from Conventional Recruitment Platforms
+34. Difference from Conventional Recruitment Platforms
 Conventional Recruitment	SkillHire
 Resume-focused screening	Skill-focused assessment
 Academic/profile information is commonly used	Practical task performance is emphasized
-Separate recruitment and assessment tools may be used	Integrated recruitment and assessment workflow
-General interviews/tests	Job-related practical tasks
+Recruitment and assessment may be handled separately	Integrated recruitment and assessment workflow
+General interviews or tests	Job-related practical tasks
 Candidate profile is a major input	Demonstrated task performance is an important input
-Limited task personalization	Company-created tasks and variants
+Limited task personalization	Company-created tasks and task variants
 
 SkillHire does not completely eliminate resumes or other recruitment methods. Instead, it provides an additional practical assessment approach for evaluating candidate skills.
 
-📌 Project Highlights
-✔ Skill-Based Reverse Internship Platform
-✔ Practical Job-Related Assessments
-✔ Easy / Medium / Hard Tasks
-✔ Randomized Task Variants
-✔ Time-Bound Assessments
-✔ Auto-Save
-✔ Verification Questions
-✔ Company Verification
-✔ Role-Based Access Control
-✔ Job Posting & Applications
-✔ Candidate Submission & Evaluation
-✔ Company-Specific Leaderboard
-✔ Centralized Recruitment Workflow
-📈 Project Status
+35. Project Highlights
+Skill-Based Reverse Internship Platform
+Practical Job-Related Assessments
+Easy / Medium / Hard Tasks
+Randomized Task Variants
+Time-Bound Assessments
+Auto-Save
+Verification Questions
+Company Verification
+Role-Based Access Control
+Job Posting and Applications
+Candidate Submission and Evaluation
+Candidate Status Management
+Company-Specific Leaderboard
+Centralized Recruitment Workflow
+
+36. Project Status
 
 Current Status: Working Prototype
 
 The current implementation supports the major workflow from user authentication and company verification to job posting, applications, task assignment, assessment, submission, evaluation, and leaderboard generation.
 
-The system provides a foundation that can be extended with automated evaluation, AI-based assessment, advanced analytics, cloud deployment, and additional recruitment features.
+The system provides a foundation that can be extended with automated evaluation, AI-based assessment, advanced analytics, cloud deployment, production database support, and additional recruitment features.
 
-👩‍💻 Contributors
+37. Contributors
 Shree P
 
 Computer Science Engineering (Data Science)
@@ -671,8 +981,18 @@ Rithu R
 
 Computer Science Engineering (Data Science)
 
-📜 License
+38. License
 
 This project has been developed as an academic mini-project.
 
 It is intended for educational, demonstration, and development purposes.
+
+
+**This one has the proper Architecture + Architecture Components + Architecture Diagram + Workflow + Database flow**, along with the rest of the README.
+
+After replacing your old README, run:
+
+```powershell
+git add README.md
+git commit -m "Update complete SkillHire project README"
+git push
