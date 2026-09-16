@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- CONDITIONAL SIDEBAR (Changes based on who is logged in!) -->
+{% if session['role'] == 'student' %}
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('student_dashboard') }}">
+            <i class="fas fa-home"></i> Dashboard
+        </a></li>
+        <li><a href="{{ url_for('task_list') }}">
+            <i class="fas fa-tasks"></i> My Tasks
+        </a></li>
+        <li><a href="{{ url_for('my_submissions') }}">
+            <i class="fas fa-paper-plane"></i> My Submissions
+        </a></li>
+        <li><a href="{{ url_for('leaderboard') }}">
+            <i class="fas fa-trophy"></i> Leaderboard
+        </a></li>
+        <li><a href="{{ url_for('profile') }}" class="active">
+            <i class="fas fa-user"></i> Profile
+        </a></li>
+        <li><a href="{{ url_for('logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a></li>
+    </ul>
+</div>
+{% elif session['role'] == 'company' %}
+<div class="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('company_dashboard') }}">
+            <i class="fas fa-home"></i> Dashboard
+        </a></li>
+        <li><a href="{{ url_for('post_task') }}">
+            <i class="fas fa-plus-circle"></i> Post Task
+        </a></li>
+        <li><a href="{{ url_for('manage_tasks') }}">
+            <i class="fas fa-tasks"></i> Manage Tasks
+        </a></li>
+        <li><a href="{{ url_for('view_submissions') }}">
+            <i class="fas fa-users"></i> Submissions
+        </a></li>
+                <li><a href="{{ url_for('reports') }}">
+            <i class="fas fa-chart-pie"></i> Reports
+        </a></li>
+
+        <li><a href="{{ url_for('profile') }}" class="active">
+            <i class="fas fa-user"></i> Profile
+        </a></li>
+        <li><a href="{{ url_for('logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a></li>
+    </ul>
+</div>
+{% endif %}
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    
+    <div class="topbar">
+        <h2>My Profile</h2>
+        <div class="topbar-right">
+            <span>{{ user_name }}</span>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div style="max-width: 600px;">
+        <form method="POST" action="{{ url_for('profile') }}">
+            
+            <div class="form-section">
+                <div class="form-section-title"><i class="fas fa-id-card"></i> Account Details</div>
+                
+                <div class="form-group">
+                    <label>Full Name / Company Name</label>
+                    <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title"><i class="fas fa-lock"></i> Security</div>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                    Leave the new password field blank if you do not want to change your current password.
+                </p>
+
+                <div class="form-group">
+                    <label>New Password (Optional)</label>
+                    <input type="password" name="new_password" class="form-control" placeholder="Enter new password">
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+
+                <div class="form-group">
+                    <label style="color: #dc2626;">Current Password (Required to save changes)</label>
+                    <input type="password" name="current_password" class="form-control" placeholder="Verify it's you" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="font-size: 16px; padding: 14px 28px;">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+
+        </form>
+    </div>
+
+</div>
+
+</body>
+<script>
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+hamburgerBtn.addEventListener('click', () => {
+    hamburgerBtn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('visible');
+});
+sidebarOverlay.addEventListener('click', () => {
+    hamburgerBtn.classList.remove('open');
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+});
+</script>
+
+</html>

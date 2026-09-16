@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Submissions</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('company_dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{{ url_for('post_job') }}"><i class="fas fa-plus-circle"></i> Post Job</a></li>
+        <li><a href="{{ url_for('company_jobs') }}"><i class="fas fa-briefcase"></i> My Jobs</a></li>
+        <li><a href="{{ url_for('post_task') }}"><i class="fas fa-code"></i> Post Task</a></li>
+        <li><a href="{{ url_for('manage_tasks') }}"><i class="fas fa-tasks"></i> Manage Tasks</a></li>
+        <li><a href="{{ url_for('view_submissions') }}" class="active"><i class="fas fa-users"></i> Submissions</a></li>
+        <li><a href="{{ url_for('reports') }}"><i class="fas fa-chart-pie"></i> Reports</a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    <div class="topbar">
+        <h2>Candidate Submissions</h2>
+        <div class="topbar-right">
+            <span>{{ user_name }}</span>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <h3><i class="fas fa-inbox"></i> Inbox</h3>
+        
+        {% if submissions %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Candidate</th>
+                        <th>Task</th>
+                        <th>Language</th>
+                        <th>Submitted</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in submissions %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px;">{{ s.student_name }}</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">{{ s.student_email }}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-main); margin-bottom: 4px;">{{ s.task_title }}</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">
+                                <code>{{ s.task_code }}</code> • {{ s.difficulty }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: #f1f5f9; color: #475569;">{{ s.language }}</span>
+                        </td>
+                        <td>{{ s.submitted_at.split('.')[0] }}</td>
+                        <td>
+                            {% if s.status == 'Pending' or not s.status %}
+                                <span class="status-badge status-pending">Needs Review</span>
+                            {% elif s.status == 'Shortlisted' %}
+                                <span class="status-badge status-shortlisted">Shortlisted</span>
+                            {% elif s.status == 'Selected' %}
+                                <span class="status-badge status-selected">Selected</span>
+                            {% elif s.status == 'Rejected' %}
+                                <span class="status-badge status-rejected">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            <!-- The 'Evaluate' button points to a route we will build next -->
+                            <a href="{{ url_for('evaluate_submission', sub_id=s.sub_id) }}" class="btn-card" style="padding: 8px 16px; font-size: 13px; display: inline-block;">
+                                {% if s.status and s.status != 'Pending' %}
+                                    Re-Evaluate
+                                {% else %}
+                                    <i class="fas fa-search"></i> Evaluate
+                                {% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users-slash" style="font-size: 48px; color: #cbd5e1; margin-bottom: 16px; display: block;"></i>
+                <p>No candidates have submitted solutions yet.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+
+<script>
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+hamburgerBtn.addEventListener('click', () => {
+    hamburgerBtn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('visible');
+});
+sidebarOverlay.addEventListener('click', () => {
+    hamburgerBtn.classList.remove('open');
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+});
+</script>
+
+</html>

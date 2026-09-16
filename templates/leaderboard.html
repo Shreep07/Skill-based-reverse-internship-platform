@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire – Leaderboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 240px;
+            min-width: 240px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-right: 1px solid #1e293b;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 0;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 50;
+        }
+        .sidebar-logo {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            padding: 0 24px 28px;
+            border-bottom: 1px solid #1e293b;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        .sidebar-logo span { color: #6366f1; }
+        .sidebar-menu { list-style: none; padding: 0 12px; flex: 1; }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+        .sidebar-menu li a:hover { background: rgba(99,102,241,0.1); color: #e2e8f0; }
+        .sidebar-menu li a.active { background: rgba(99,102,241,0.18); color: #a5b4fc; font-weight: 600; }
+        .sidebar-menu li a i { width: 18px; text-align: center; font-size: 14px; }
+
+        /* ── MAIN ── */
+        .main-content {
+            margin-left: 240px;
+            flex: 1;
+            padding: 32px;
+            max-width: 1100px;
+        }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            margin-bottom: 32px;
+        }
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a5b4fc, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+        .page-header p { color: #64748b; font-size: 14px; }
+
+        /* ── MY RANK BANNER ── */
+        .my-rank-banner {
+            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1));
+            border: 1px solid rgba(99,102,241,0.35);
+            border-radius: 14px;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 28px;
+            animation: fadeSlideIn 0.5s ease;
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .my-rank-big {
+            font-size: 40px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: #a5b4fc;
+            line-height: 1;
+            min-width: 60px;
+            text-align: center;
+        }
+        .my-rank-info h3 { font-size: 16px; font-weight: 700; color: #e2e8f0; margin-bottom: 2px; }
+        .my-rank-info p  { font-size: 13px; color: #94a3b8; }
+        .my-rank-right { margin-left: auto; text-align: right; }
+        .my-rank-right .label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+        .my-rank-right .val   { font-size: 22px; font-weight: 800; color: #a5b4fc; font-family: 'JetBrains Mono', monospace; }
+
+        /* ── PODIUM ── */
+        .podium-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 28px;
+            align-items: flex-end;
+        }
+        .podium-card {
+            flex: 1;
+            border-radius: 14px;
+            padding: 20px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        .podium-card:hover { transform: translateY(-4px); }
+        .podium-card.gold   { background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08)); border: 1px solid rgba(251,191,36,0.4); order: 2; }
+        .podium-card.silver { background: linear-gradient(135deg, rgba(148,163,184,0.12), rgba(100,116,139,0.06)); border: 1px solid rgba(148,163,184,0.3); order: 1; }
+        .podium-card.bronze { background: linear-gradient(135deg, rgba(180,120,80,0.12), rgba(180,120,80,0.06)); border: 1px solid rgba(180,120,80,0.3); order: 3; }
+        .podium-medal { font-size: 36px; line-height: 1; }
+        .podium-rank-num { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .05em; }
+        .podium-name { font-size: 15px; font-weight: 700; color: #e2e8f0; text-align: center; }
+        .podium-score { font-size: 22px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+        .podium-card.gold   .podium-score { color: #fbbf24; }
+        .podium-card.silver .podium-score { color: #94a3b8; }
+        .podium-card.bronze .podium-score { color: #cd7c4e; }
+        .podium-tasks { font-size: 12px; color: #64748b; }
+
+        /* ── TABLE ── */
+        .lb-table-wrap {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .lb-table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .lb-table-header h3 { font-size: 14px; font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 8px; }
+        .lb-count { font-size: 12px; color: #64748b; }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            padding: 10px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: #475569;
+            background: #0f172a;
+            text-align: left;
+        }
+        thead th:nth-child(1) { width: 60px; text-align: center; }
+        thead th:nth-child(3), thead th:nth-child(4), thead th:nth-child(5), thead th:nth-child(6) { text-align: center; }
+
+        tbody tr {
+            border-top: 1px solid #1e293b;
+            transition: background 0.15s;
+            animation: rowIn 0.4s ease both;
+        }
+        @keyframes rowIn {
+            from { opacity: 0; transform: translateX(-8px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        tbody tr:hover { background: rgba(99,102,241,0.06); }
+        tbody tr.me-row { background: rgba(99,102,241,0.1) !important; border-left: 3px solid #6366f1; }
+
+        td {
+            padding: 13px 16px;
+            font-size: 13.5px;
+            color: #cbd5e1;
+            vertical-align: middle;
+        }
+        td:nth-child(1) { text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+        td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) { text-align: center; }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: 800;
+            font-size: 13px;
+        }
+        .rank-badge.r1 { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.5); }
+        .rank-badge.r2 { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.4); }
+        .rank-badge.r3 { background: rgba(205,124,78,0.15); color: #cd7c4e; border: 1px solid rgba(205,124,78,0.4); }
+        .rank-badge.rn { background: rgba(51,65,85,0.5); color: #475569; }
+
+        .student-name-cell { display: flex; align-items: center; gap: 10px; }
+        .avatar {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .name-text { font-weight: 600; color: #e2e8f0; }
+        .you-chip {
+            font-size: 10px; font-weight: 700;
+            background: rgba(99,102,241,0.2);
+            color: #a5b4fc;
+            border: 1px solid rgba(99,102,241,0.4);
+            padding: 1px 7px;
+            border-radius: 20px;
+            margin-left: 6px;
+        }
+
+        /* Score bar */
+        .score-cell { min-width: 110px; }
+        .score-val  { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #a5b4fc; font-size: 14px; }
+        .score-bar-wrap { height: 4px; background: #1e293b; border-radius: 99px; margin-top: 4px; overflow: hidden; }
+        .score-bar { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #6366f1, #8b5cf6); transition: width 1s ease; }
+
+        /* Status badges */
+        .status-pill {
+            display: inline-block;
+            font-size: 11px; font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .status-pill.selected    { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.4); }
+        .status-pill.shortlisted { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); }
+        .status-pill.none        { background: rgba(51,65,85,0.5);    color: #475569; border: 1px solid #334155; }
+
+        /* Empty state */
+        .empty-lb {
+            text-align: center;
+            padding: 60px 20px;
+            color: #475569;
+        }
+        .empty-lb i { font-size: 40px; margin-bottom: 12px; color: #334155; display: block; }
+        .empty-lb p { font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ Skill<span>Hire</span></div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('student_dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{{ url_for('task_list') }}"><i class="fas fa-tasks"></i> My Tasks</a></li>
+        <li><a href="{{ url_for('my_submissions') }}"><i class="fas fa-paper-plane"></i> My Submissions</a></li>
+        <li><a href="{{ url_for('leaderboard') }}" class="active"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+        <li><a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main-content">
+
+    <!-- Header & Filter -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px;">
+        <div class="page-header" style="margin: 0;">
+            <h1><i class="fas fa-trophy" style="font-size:24px; -webkit-text-fill-color:#fbbf24;"></i> Leaderboard</h1>
+            <p>
+                {% if current_company %}
+                    Showing rankings for assessments by <strong>{% for c in companies %}{% if c.id == current_company %}{{ c.name }}{% endif %}{% endfor %}</strong>
+                {% else %}
+                    Rankings based on total scores across all evaluated tasks
+                {% endif %}
+                &nbsp;·&nbsp; {{ leaderboard|length }} student{{ 's' if leaderboard|length != 1 else '' }} ranked
+            </p>
+        </div>
+        
+        <div class="filter-box" style="background: #1e293b; border: 1px solid #334155; padding: 10px 16px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
+            <label style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Filter by Company:</label>
+            <select onchange="location.href='/student/leaderboard?company_id=' + this.value" style="background: #0f172a; color: #fff; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 13px; outline: none; cursor: pointer;">
+                <option value="">All Companies</option>
+                {% for c in companies %}
+                <option value="{{ c.id }}" {% if c.id == current_company %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+
+    {% if leaderboard %}
+
+    <!-- My Rank Banner -->
+    {% if my_rank %}
+    <div class="my-rank-banner">
+        <div class="my-rank-big">#{{ my_rank }}</div>
+        <div class="my-rank-info">
+            <h3>Your Current Rank</h3>
+            <p>Keep solving tasks to climb higher!</p>
+        </div>
+        {% set me = leaderboard | selectattr('is_me') | list | first %}
+        <div class="my-rank-right">
+            <div class="label">Your Total Score</div>
+            <div class="val">{{ me.total_score }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Top 3 Podium -->
+    {% if leaderboard | length >= 1 %}
+    <div class="podium-row">
+        {% set podium_styles = [
+            ('gold',   '🥇', '1st Place'),
+            ('silver', '🥈', '2nd Place'),
+            ('bronze', '🥉', '3rd Place')
+        ] %}
+        {% for i in range([leaderboard|length, 3]|min) %}
+        {% set p = leaderboard[i] %}
+        {% set style, medal, label = podium_styles[i] %}
+        <div class="podium-card {{ style }}">
+            <div class="podium-medal">{{ medal }}</div>
+            <div class="podium-rank-num">{{ label }}</div>
+            <div class="podium-name">{{ p.student_name }}{% if p.is_me %} <span style="font-size:11px;color:#a5b4fc;">(You)</span>{% endif %}</div>
+            <div class="podium-score">{{ p.total_score }}</div>
+            <div class="podium-tasks">{{ p.tasks_done }} task{{ 's' if p.tasks_done != 1 else '' }} completed</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Full Rankings Table -->
+    <div class="lb-table-wrap">
+        <div class="lb-table-header">
+            <h3><i class="fas fa-list-ol" style="color:#6366f1;"></i> Full Rankings</h3>
+            <span class="lb-count">{{ total_students }} participants</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Student</th>
+                    <th>Tasks Done</th>
+                    <th>Best Score</th>
+                    <th>Avg Score</th>
+                    <th>Total Score</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% set max_score = leaderboard[0].total_score if leaderboard else 1 %}
+            {% for entry in leaderboard %}
+            <tr class="{{ 'me-row' if entry.is_me else '' }}" style="animation-delay: {{ loop.index0 * 0.04 }}s">
+                <!-- Rank -->
+                <td>
+                    {% if entry.rank == 1 %}
+                        <span class="rank-badge r1">1</span>
+                    {% elif entry.rank == 2 %}
+                        <span class="rank-badge r2">2</span>
+                    {% elif entry.rank == 3 %}
+                        <span class="rank-badge r3">3</span>
+                    {% else %}
+                        <span class="rank-badge rn">{{ entry.rank }}</span>
+                    {% endif %}
+                </td>
+
+                <!-- Student Name -->
+                <td>
+                    <div class="student-name-cell">
+                        <div class="avatar" style="background: hsl({{ (entry.student_id * 47) % 360 }}, 60%, 20%); color: hsl({{ (entry.student_id * 47) % 360 }}, 80%, 70%);">
+                            {{ entry.student_name[0].upper() }}
+                        </div>
+                        <span class="name-text">{{ entry.student_name }}</span>
+                        {% if entry.is_me %}<span class="you-chip">YOU</span>{% endif %}
+                    </div>
+                </td>
+
+                <!-- Tasks Done -->
+                <td><span style="font-family:'JetBrains Mono',monospace; font-weight:600;">{{ entry.tasks_done }}</span></td>
+
+                <!-- Best Score -->
+                <td><span style="font-family:'JetBrains Mono',monospace; color:#34d399;">{{ entry.best_score or 0 }}</span></td>
+
+                <!-- Avg Score -->
+                <td><span style="font-family:'JetBrains Mono',monospace; color:#94a3b8;">{{ entry.avg_score }}</span></td>
+
+                <!-- Total Score with bar -->
+                <td class="score-cell">
+                    <div class="score-val">{{ entry.total_score }}</div>
+                    <div class="score-bar-wrap">
+                        <div class="score-bar" style="width: {{ ((entry.total_score / max_score) * 100) if max_score > 0 else 0 }}%"></div>
+                    </div>
+                </td>
+
+                <!-- Status -->
+                <td>
+                    {% if entry.selected_count > 0 %}
+                        <span class="status-pill selected"><i class="fas fa-star" style="margin-right:4px;font-size:9px;"></i>Selected ×{{ entry.selected_count }}</span>
+                    {% elif entry.shortlisted_count > 0 %}
+                        <span class="status-pill shortlisted"><i class="fas fa-bookmark" style="margin-right:4px;font-size:9px;"></i>Shortlisted ×{{ entry.shortlisted_count }}</span>
+                    {% else %}
+                        <span class="status-pill none">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <!-- Empty state -->
+    <div class="empty-lb">
+        <i class="fas fa-trophy"></i>
+        <p>No rankings yet. Leaderboard will appear once tasks are evaluated by companies.</p>
+    </div>
+    {% endif %}
+</div>
+
+
+
+</div>
+</body>
+</html>

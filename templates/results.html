@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('student_dashboard') }}">
+            <i class="fas fa-home"></i> Dashboard
+        </a></li>
+        <li><a href="{{ url_for('task_list') }}">
+            <i class="fas fa-tasks"></i> My Tasks
+        </a></li>
+    </ul>
+</div>
+
+<div class="main-content" style="display: flex; align-items: center; justify-content: center;">
+    
+    <div class="card" style="text-align: center; max-width: 500px; padding: 48px; border-top: 4px solid var(--primary);">
+        <i class="fas fa-check-circle" style="font-size: 64px; color: var(--success); margin-bottom: 24px;"></i>
+        
+        <h2 style="font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 12px;">Submission Complete!</h2>
+        
+        <p style="color: var(--text-muted); font-size: 16px; line-height: 1.6; margin-bottom: 32px;">
+            Your code and verification answers for <strong>{{ evaluation.title }}</strong> have been submitted to <strong>{{ evaluation.company_name }}</strong> successfully.
+        </p>
+        
+        <div style="background: var(--bg-light); border-radius: var(--radius-md); padding: 24px; margin-bottom: 32px; border: 1px dashed #cbd5e1;">
+            <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 8px;">Status</div>
+            <div class="status-badge status-pending" style="font-size: 16px; padding: 8px 16px;">
+                <i class="fas fa-hourglass-half"></i> Pending Manual Review
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 12px;">
+                The company will manually review your code execution and written verification answers. Check your dashboard for updates.
+            </p>
+        </div>
+
+        <a href="{{ url_for('student_dashboard') }}" class="btn-primary full-width">
+            Return to Dashboard
+        </a>
+    </div>
+
+</div>
+
+</body>
+<script>
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+hamburgerBtn.addEventListener('click', () => {
+    hamburgerBtn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('visible');
+});
+sidebarOverlay.addEventListener('click', () => {
+    hamburgerBtn.classList.remove('open');
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+});
+</script>
+
+</html>

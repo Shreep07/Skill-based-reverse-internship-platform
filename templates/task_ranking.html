@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking: {{ task_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .rank-gold { color: #ffd700; }
+        .rank-silver { color: #c0c0c0; }
+        .rank-bronze { color: #cd7f32; }
+        .badge-status { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+    </style>
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('company_dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{{ url_for('manage_tasks') }}" class="active"><i class="fas fa-tasks"></i> Manage Tasks</a></li>
+        <li><a href="{{ url_for('view_submissions') }}"><i class="fas fa-users"></i> Submissions</a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="topbar">
+        <h2><i class="fas fa-trophy" style="color: #f59e0b;"></i> Ranking: {{ task_title }}</h2>
+        <div class="topbar-right">
+            <span>{{ user_name }}</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3>Candidate Leaderboard</h3>
+            <a href="{{ url_for('manage_tasks') }}" class="btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                <i class="fas fa-arrow-left"></i> Back to Tasks
+            </a>
+        </div>
+
+        {% if rankings %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Candidate Name</th>
+                    <th>Total Score</th>
+                    <th>Code Quality</th>
+                    <th>Verification</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in rankings %}
+                <tr>
+                    <td>
+                        {% if loop.index == 1 %}<i class="fas fa-crown rank-gold"></i>
+                        {% elif loop.index == 2 %}<i class="fas fa-medal rank-silver"></i>
+                        {% elif loop.index == 3 %}<i class="fas fa-medal rank-bronze"></i>
+                        {% else %}{{ loop.index }}{% endif %}
+                    </td>
+                    <td style="font-weight: 600;">{{ r.student_name }}</td>
+                    <td style="font-weight: 800; font-size: 16px; color: #6366f1;">{{ r.total_score }} / 100</td>
+                    <td>{{ r.solution_score }}/50</td>
+                    <td>{{ r.verification_score }}/50</td>
+                    <td>
+                        <span class="badge-status" style="
+                            background: {% if r.status == 'Selected' %}#dcfce7{% elif r.status == 'Rejected' %}#fee2e2{% else %}#f1f5f9{% endif %};
+                            color: {% if r.status == 'Selected' %}#166534{% elif r.status == 'Rejected' %}#991b1b{% else %}#475569{% endif %};
+                        ">
+                            {{ r.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-user-slash" style="font-size: 40px; color: #cbd5e1; margin-bottom: 10px;"></i>
+            <p>No evaluations completed for this task yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const btn = document.getElementById('hamburgerBtn');
+    const side = document.getElementById('sidebar');
+    const over = document.getElementById('sidebarOverlay');
+    btn.onclick = () => { btn.classList.toggle('open'); side.classList.toggle('open'); over.classList.toggle('visible'); };
+    over.onclick = () => { btn.classList.remove('open'); side.classList.remove('open'); over.classList.remove('visible'); };
+</script>
+</body>
+</html>

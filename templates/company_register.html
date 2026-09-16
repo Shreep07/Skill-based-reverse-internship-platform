@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Registration - SkillHire</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-body" style="background: radial-gradient(circle at bottom left, var(--accent) 0%, var(--bg-deep) 100%);">
+    <div class="auth-container">
+        <!-- Company Panel -->
+        <div class="auth-left" style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);">
+            <div style="z-index: 2; width: 100%;">
+                <div style="font-size: 48px; font-weight: 900; letter-spacing: -2px; color: #fff; margin-bottom: 10px;">⚡ SKILLHIRE</div>
+                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 3px; color: rgba(255,255,255,0.7); font-weight: 700; margin-bottom: 40px;">Talent Acquisition Redefined</div>
+                
+                <p style="font-size: 18px; line-height: 1.6; color: #fff; opacity: 0.9;">Automate your technical screening process and find high-quality developers faster than ever.</p>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="auth-right">
+            <div class="auth-box">
+                <h2 style="font-size: 24px;">Register Your Company</h2>
+
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('company_register') }}">
+
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" name="name" placeholder="e.g. Google, TechCorp" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Business Email</label>
+                        <input type="email" name="email" placeholder="hr@company.com" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Company Website</label>
+                            <input type="url" name="website" placeholder="https://example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" name="contact" placeholder="+1 234 567 890" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tax ID / Registration Number</label>
+                        <input type="text" name="tax_id" placeholder="e.g. EIN-123456" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="Min. 8 characters" required>
+                    </div>
+
+
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, var(--primary), var(--accent)); margin-top: 10px;">Register Business</button>
+
+                </form>
+
+                <div class="auth-footer">
+                    Already registered? <a href="{{ url_for('company_login') }}" style="color: var(--primary);">Sign In</a>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

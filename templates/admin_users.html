@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire Admin – Platform Users</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #0f172a;
+            --admin-card: #1e293b;
+            --admin-accent: #6366f1;
+            --admin-text: #f1f5f9;
+        }
+
+        body.admin-mode {
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+        }
+
+        .admin-sidebar { width: 260px; height: 100vh; background: #020617; border-right: 1px solid #1e293b; position: fixed; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid #1e293b; }
+        .logo-text { font-size: 24px; font-weight: 800; }
+        .admin-nav { padding: 24px 12px; flex: 1; }
+        .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #94a3b8; text-decoration: none; border-radius: 8px; font-weight: 500; transition: 0.3s; margin-bottom: 4px; }
+        .nav-link:hover, .nav-link.active { background: rgba(99, 102, 241, 0.1); color: var(--admin-accent); }
+        .nav-link.logout { margin-top: auto; color: #ef4444; }
+
+        .admin-main { margin-left: 260px; flex: 1; padding: 40px; min-height: 100vh; }
+        .page-header { margin-bottom: 32px; }
+        .data-section { background: var(--admin-card); border: 1px solid #334155; border-radius: 20px; overflow: hidden; }
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th { text-align: left; padding: 16px 24px; background: #111827; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .admin-table td { padding: 16px 24px; border-bottom: 1px solid #334155; }
+
+        .role-badge { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .role-student { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .role-company { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+        .role-admin { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+        .btn-delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .btn-delete:hover { background: #ef4444; color: #fff; }
+    </style>
+</head>
+<body class="admin-mode">
+
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo-text">⚡ SKILLHIRE</div>
+        </div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-link"><i class="fas fa-shield-alt"></i> Company Vetting</a>
+            <a href="{{ url_for('admin_users') }}" class="nav-link active"><i class="fas fa-users"></i> Platform Users</a>
+            <a href="{{ url_for('admin_analytics') }}" class="nav-link"><i class="fas fa-chart-line"></i> Global Analytics</a>
+            <a href="{{ url_for('logout') }}" class="nav-link logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <div class="page-header">
+            <h1 style="margin:0;">User Management</h1>
+            <p style="color:#64748b;">Monitor and manage all students, companies, and staff.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }}" style="margin-bottom:20px; border-radius:10px;">{{ msg }}</div>
+            {% endfor %}{% endif %}
+        {% endwith %}
+
+        <div class="data-section">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>User Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Joined On</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td style="font-weight:700;">{{ user.name }}</td>
+                        <td style="color:#94a3b8;">{{ user.email }}</td>
+                        <td>
+                            <span class="role-badge role-{{ user.role }}">{{ user.role }}</span>
+                        </td>
+                        <td style="font-size:12px; color:#64748b;">ID: {{ user.id }}</td>
+                        <td style="text-align:right;">
+                            {% if user.role != 'admin' %}
+                            <form action="{{ url_for('admin_delete_user', uid=user.id) }}" method="POST" onsubmit="return confirm('Delete this user?');">
+                                <button type="submit" class="btn-delete"><i class="fas fa-trash"></i></button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

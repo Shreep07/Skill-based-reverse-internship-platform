@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Job Listings</title>
+    <meta name="description" content="Browse and apply to open job postings from top companies on SkillHire.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+<!-- Hamburger (mobile only) -->
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('student_dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{{ url_for('task_list') }}"><i class="fas fa-tasks"></i> My Tasks</a></li>
+        <li><a href="{{ url_for('student_jobs') }}" class="active"><i class="fas fa-briefcase"></i> Job Listings</a></li>
+        <li><a href="{{ url_for('my_applications') }}"><i class="fas fa-file-alt"></i> My Applications</a></li>
+        <li><a href="{{ url_for('my_submissions') }}"><i class="fas fa-paper-plane"></i> My Submissions</a></li>
+        <li><a href="{{ url_for('leaderboard') }}"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+        <li><a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <div class="topbar">
+        <div>
+            <h2><i class="fas fa-briefcase" style="color:var(--primary);margin-right:8px;"></i>Job Listings</h2>
+            <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Browse open positions from companies on SkillHire</p>
+        </div>
+        <div class="topbar-right">
+            <span>{{ user_name }}</span>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }}">{{ msg }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <!-- Job Cards Grid -->
+    <div class="job-grid">
+        {% for job in jobs %}
+        <div class="job-card">
+            <div class="job-title">{{ job.title }}</div>
+            <div class="job-company">
+                <i class="fas fa-building"></i> {{ job.company_name }}
+            </div>
+            <div class="job-desc">
+                {{ job.description[:130] }}{% if job.description|length > 130 %}...{% endif %}
+            </div>
+
+            <!-- Skill tags -->
+            {% if job.skills %}
+            <div class="skill-tags">
+                {% for sk in job.skills.split(',') %}
+                    {% if sk.strip() %}<span class="skill-tag">{{ sk.strip() }}</span>{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="job-meta">
+                <span class="job-meta-item"><i class="fas fa-map-marker-alt"></i>{{ job.location }}</span>
+                <span class="job-meta-item"><i class="fas fa-clock"></i>{{ job.job_type }}</span>
+                {% if job.salary %}<span class="job-meta-item"><i class="fas fa-rupee-sign"></i>{{ job.salary }}</span>{% endif %}
+                <span class="job-meta-item"><i class="fas fa-users"></i>{{ job.openings }} opening{{ 's' if job.openings != 1 else '' }}</span>
+            </div>
+
+            {% if job.id in applied_ids %}
+                <div class="btn-applied"><i class="fas fa-check-circle"></i> Applied</div>
+            {% else %}
+                <button class="btn-apply" 
+                        data-id="{{ job.id }}" 
+                        data-title="{{ job.title|e }}" 
+                        onclick="openApplyModal(this.dataset.id, this.dataset.title)">
+                    <i class="fas fa-paper-plane"></i> Apply Now
+                </button>
+            {% endif %}
+        </div>
+        {% else %}
+        <div style="grid-column: 1/-1;" class="empty-state">
+            <i class="fas fa-briefcase"></i>
+            <h3>No Job Listings Yet</h3>
+            <p>Companies haven't posted any openings yet. Check back soon!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Apply Modal -->
+<div class="apply-modal-backdrop" id="applyModal">
+    <div class="apply-modal">
+        <h3><i class="fas fa-paper-plane" style="color:var(--primary);margin-right:8px;"></i>Apply for <span id="modalJobTitle"></span></h3>
+        <form id="applyForm" method="POST">
+            <input type="hidden" name="job_id" id="modalJobId">
+            <div class="form-group">
+                <label>Cover Letter <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+                <textarea name="cover_letter" class="form-control" style="min-height:120px;"
+                    placeholder="Tell the company why you're a great fit for this role..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Portfolio / Resume Link <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+                <input type="url" name="resume_link" class="form-control" placeholder="https://github.com/yourprofile or Google Drive link">
+            </div>
+            <div style="display:flex;gap:12px;margin-top:8px;">
+                <button type="submit" class="btn-apply" style="flex:1;">
+                    <i class="fas fa-check"></i> Submit Application
+                </button>
+                <button type="button" class="btn-secondary" onclick="closeApplyModal()" style="flex:0.5;">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Hamburger
+const btn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+btn.addEventListener('click', () => {
+    btn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('visible');
+});
+overlay.addEventListener('click', () => {
+    btn.classList.remove('open');
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
+});
+
+// Apply modal
+function openApplyModal(jobId, jobTitle) {
+    document.getElementById('modalJobTitle').textContent = jobTitle;
+    document.getElementById('applyForm').action = '/student/jobs/' + jobId + '/apply';
+    document.getElementById('applyModal').classList.add('visible');
+}
+function closeApplyModal() {
+    document.getElementById('applyModal').classList.remove('visible');
+}
+document.getElementById('applyModal').addEventListener('click', function(e) {
+    if (e.target === this) closeApplyModal();
+});
+</script>
+</body>
+</html>

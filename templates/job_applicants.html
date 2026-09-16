@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Job Applicants</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('company_dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{{ url_for('post_job') }}"><i class="fas fa-plus-circle"></i> Post Job</a></li>
+        <li><a href="{{ url_for('company_jobs') }}" class="active"><i class="fas fa-briefcase"></i> My Jobs</a></li>
+        <li><a href="{{ url_for('post_task') }}"><i class="fas fa-code"></i> Post Task</a></li>
+        <li><a href="{{ url_for('manage_tasks') }}"><i class="fas fa-tasks"></i> Manage Tasks</a></li>
+        <li><a href="{{ url_for('view_submissions') }}"><i class="fas fa-users"></i> Submissions</a></li>
+        <li><a href="{{ url_for('reports') }}"><i class="fas fa-chart-pie"></i> Reports</a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+
+    <div class="topbar">
+        <div>
+            <a href="{{ url_for('company_jobs') }}" style="color:var(--text-muted);font-size:13px;text-decoration:none;display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <i class="fas fa-arrow-left"></i> Back to My Jobs
+            </a>
+            <h2><i class="fas fa-users" style="color:var(--primary);margin-right:8px;"></i>Applicants for: {{ job.title }}</h2>
+            <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">
+                <span class="job-meta-item" style="display:inline-flex;gap:5px;">
+                    <i class="fas fa-map-marker-alt"></i>{{ job.location }}
+                </span>
+                &nbsp;·&nbsp;
+                <span>{{ job.job_type }}</span>
+                &nbsp;·&nbsp;
+                <span class="{{ 'status-badge status-active' if job.status == 'Open' else 'status-badge status-draft' }}">{{ job.status }}</span>
+            </p>
+        </div>
+        <div class="topbar-right"><span>{{ user_name }}</span></div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }}">{{ msg }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <!-- Summary Bar -->
+    <div class="stats-grid" style="margin-bottom:24px;">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+            <span class="stat-number">{{ applicants|length }}</span>
+            <span class="stat-label">Total Applicants</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon yellow"><i class="fas fa-eye"></i></div>
+            <span class="stat-number">{{ applicants|selectattr('status','eq','Reviewing')|list|length }}</span>
+            <span class="stat-label">Under Review</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+            <span class="stat-number">{{ applicants|selectattr('status','eq','Accepted')|list|length }}</span>
+            <span class="stat-label">Accepted</span>
+        </div>
+    </div>
+
+    {% if applicants %}
+    <div class="card" style="overflow-x:auto;">
+        <h3><i class="fas fa-list"></i> All Applicants</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Applicant</th>
+                    <th>Applied On</th>
+                    <th>Cover Letter</th>
+                    <th>Portfolio</th>
+                    <th>Status</th>
+                    <th>Update Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in applicants %}
+                <tr>
+                    <td data-label="Applicant">
+                        <div style="font-weight:700;color:var(--text-main);">{{ a.student_name }}</div>
+                        <div style="font-size:11px;color:var(--text-muted);">{{ a.student_email }}</div>
+                    </td>
+                    <td data-label="Applied On">{{ a.applied_at[:10] if a.applied_at else '—' }}</td>
+                    <td data-label="Cover Letter">
+                        {% if a.cover_letter %}
+                            <button class="btn-secondary" style="font-size:11px;padding:5px 10px;"
+                                onclick="showCoverLetter('{{ a.student_name|e }}', this.dataset.letter)"
+                                data-letter="{{ a.cover_letter|e }}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        {% else %}
+                            <span style="color:var(--text-muted);font-size:12px;">—</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Portfolio">
+                        {% if a.resume_link %}
+                            <a href="{{ a.resume_link }}" target="_blank" class="btn-secondary" style="font-size:11px;padding:5px 10px;">
+                                <i class="fas fa-external-link-alt"></i> Open
+                            </a>
+                        {% else %}
+                            <span style="color:var(--text-muted);font-size:12px;">—</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Status">
+                        {% set s = a.status %}
+                        {% if s == 'Applied' %}     <span class="chip chip-applied">{{ s }}</span>
+                        {% elif s == 'Reviewing' %} <span class="chip chip-reviewing">{{ s }}</span>
+                        {% elif s == 'Shortlisted' %}<span class="chip chip-shortlisted">{{ s }}</span>
+                        {% elif s == 'Accepted' %}  <span class="chip chip-accepted">{{ s }}</span>
+                        {% else %}                  <span class="chip chip-rejected">{{ s }}</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Update">
+                        <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                            {% for st in ['Reviewing', 'Shortlisted', 'Accepted', 'Rejected'] %}
+                            {% if st != a.status %}
+                            <a href="{{ url_for('update_application_status', app_id=a.id, new_status=st) }}"
+                               class="btn-secondary" style="font-size:10px;padding:4px 8px;"
+                               {% if st == 'Rejected' %}onclick="return confirm('Reject this applicant?')"{% endif %}>
+                               {{ st }}
+                            </a>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="empty-state">
+            <i class="fas fa-user-clock"></i>
+            <h3>No Applicants Yet</h3>
+            <p>Students haven't applied for this job yet. Share the opening to attract candidates!</p>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Cover letter modal -->
+<div class="apply-modal-backdrop" id="clModal">
+    <div class="apply-modal">
+        <h3 id="clModalTitle"></h3>
+        <div style="background:var(--bg-deep);border-radius:var(--radius-sm);padding:16px;border:1px solid var(--border);max-height:300px;overflow-y:auto;">
+            <p id="clModalBody" style="font-size:14px;color:var(--text-soft);line-height:1.7;margin:0;white-space:pre-wrap;"></p>
+        </div>
+        <button class="btn-secondary" style="margin-top:16px;width:100%;" onclick="document.getElementById('clModal').classList.remove('visible')">
+            Close
+        </button>
+    </div>
+</div>
+
+<script>
+const btn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+btn.addEventListener('click', () => {
+    btn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('visible');
+});
+overlay.addEventListener('click', () => {
+    btn.classList.remove('open');
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
+});
+
+function showCoverLetter(name, letter) {
+    document.getElementById('clModalTitle').textContent = name + "'s Cover Letter";
+    document.getElementById('clModalBody').textContent = letter;
+    document.getElementById('clModal').classList.add('visible');
+}
+document.getElementById('clModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('visible');
+});
+</script>
+</body>
+</html>

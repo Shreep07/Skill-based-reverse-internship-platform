@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration - SkillHire</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-body" style="background: radial-gradient(circle at top left, var(--accent) 0%, var(--bg-deep) 100%);">
+    <div class="auth-container">
+        <!-- Student Panel -->
+        <div class="auth-left" style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);">
+            <div style="z-index: 2; width: 100%;">
+                <div style="font-size: 48px; font-weight: 900; letter-spacing: -2px; color: #fff; margin-bottom: 10px;">⚡ SKILLHIRE</div>
+                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 3px; color: rgba(255,255,255,0.7); font-weight: 700; margin-bottom: 40px;">Powering Future Careers</div>
+                
+                <p style="font-size: 18px; line-height: 1.6; color: #fff; opacity: 0.9;">Create your profile to start solving assessments and get recognized by hiring managers worldwide.</p>
+            </div>
+        </div>
+
+
+        <!-- Registration Form -->
+        <div class="auth-right">
+            <div class="auth-box">
+                <h2 style="font-size: 24px;">Create Student Account</h2>
+
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('student_register') }}">
+
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="name" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" name="email" placeholder="student@university.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="Min. 8 characters" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, var(--primary), var(--accent)); margin-top: 10px;">Create Account</button>
+
+                </form>
+
+                <div class="auth-footer">
+                    Already have a student account? <a href="{{ url_for('student_login') }}" style="color: #6366f1;">Sign In</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

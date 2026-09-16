@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Evaluate Submission</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ace.js"></script>
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('company_dashboard') }}">
+            <i class="fas fa-home"></i> Dashboard
+        </a></li>
+        <li><a href="{{ url_for('post_task') }}">
+            <i class="fas fa-plus-circle"></i> Post Task
+        </a></li>
+        <li><a href="{{ url_for('manage_tasks') }}">
+            <i class="fas fa-tasks"></i> Manage Tasks
+        </a></li>
+        <li><a href="{{ url_for('view_submissions') }}" class="active">
+            <i class="fas fa-users"></i> Submissions
+        </a></li>
+        <li><a href="{{ url_for('logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="topbar" style="margin-bottom: 16px;">
+        <h2>Evaluating: {{ submission['student_name'] }}</h2>
+        <div class="topbar-right">
+            <a href="{{ url_for('view_submissions') }}" class="btn-card" style="padding: 8px 16px;">Back to Inbox</a>
+        </div>
+    </div>
+
+    <div class="eval-layout">
+        
+        <!-- LEFT: Code Editor & Execution -->
+        <div class="eval-left">
+            <div class="editor-header" style="flex-direction: column; align-items: stretch; gap: 10px; height: auto; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-weight: 800; font-size: 16px;">{{ submission['task_title'] }}</span>
+                        <span class="badge" style="background: #e2e8f0; color: #475569; margin-left: 8px;">{{ submission['language'] }}</span>
+                    </div>
+                    <button class="btn-card" style="padding: 6px 16px; font-size: 13px;" onclick="runCode()">
+                        <i class="fas fa-play"></i> Test Current Tab
+                    </button>
+                </div>
+
+                <div id="problemDesc" style="background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; font-size:13px; color:#94a3b8; margin-top:10px; border-left:4px solid #10b981; white-space:pre-wrap;">{{ submission.desc_easy }}</div>
+                
+                <!-- Level Tabs for Recruiter -->
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button class="level-tab active" id="tab-easy" onclick="viewSolution('easy')" style="flex:1; padding:8px; border:none; border-bottom:3px solid #10b981; background:rgba(16,185,129,0.05); color:#10b981; font-weight:bold; cursor:pointer;">Easy</button>
+                    <button class="level-tab" id="tab-medium" onclick="viewSolution('medium')" style="flex:1; padding:8px; border:none; border-bottom:3px solid transparent; background:transparent; color:#64748b; font-weight:bold; cursor:pointer;">Medium</button>
+                    <button class="level-tab" id="tab-hard" onclick="viewSolution('hard')" style="flex:1; padding:8px; border:none; border-bottom:3px solid transparent; background:transparent; color:#64748b; font-weight:bold; cursor:pointer;">Hard</button>
+                </div>
+            </div>
+            
+            <div id="editor" style="flex: 1; width: 100%;"></div>
+            <div id="terminal" class="terminal-box" style="display: none;"></div>
+        </div>
+
+
+        <!-- RIGHT: Grading Panel -->
+        <div class="eval-right">
+            <form method="POST" action="{{ url_for('evaluate_submission', sub_id=submission.id) }}">
+                
+                <h3 style="margin-bottom: 16px;"><i class="fas fa-clipboard-check"></i> Written Verification</h3>
+                
+                {% for ans in answers %}
+                <div class="eval-answer-box">
+                    <strong style="display: block; margin-bottom: 8px; font-size: 14px;">Q: {{ ans.question }}</strong>
+                    <div style="font-size: 15px; color: var(--text-main); line-height: 1.6;">
+                        {{ ans.student_answer }}
+                    </div>
+                    <div class="eval-expected">
+                        <i class="fas fa-key"></i> Expected: {{ ans.expected_answer }}
+                    </div>
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-size: 14px; font-style: italic; margin-bottom: 24px;">No written verification was required for this task.</p>
+                {% endfor %}
+
+                <hr style="border: 0; border-top: 2px dashed #e2e8f0; margin: 24px 0;">
+
+                <h3 style="margin-bottom: 24px;"><i class="fas fa-star-half-alt"></i> Official Grading</h3>
+
+                <!-- Score Sliders -->
+                <div class="form-group">
+                    <label style="display: flex; justify-content: space-between;">
+                        <span>Code Quality Score</span>
+                        <span class="score-display" id="solDisplay">{{ evaluation.solution_score if evaluation else 0 }}/50</span>
+                    </label>
+                    <input type="range" name="solution_score" id="solScore" min="0" max="50" value="{{ evaluation.solution_score if evaluation else 0 }}" oninput="updateScores()">
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; justify-content: space-between;">
+                        <span>Verification Score (Conceptual)</span>
+                        <span class="score-display" id="verDisplay">{{ evaluation.verification_score if evaluation else 0 }}/50</span>
+                    </label>
+                    <input type="range" name="verification_score" id="verScore" min="0" max="50" value="{{ evaluation.verification_score if evaluation else 0 }}" oninput="updateScores()">
+                </div>
+
+                <div class="form-group" style="background: #eff6ff; padding: 16px; border-radius: 8px; border: 1px solid #bfdbfe; text-align: center; margin-top: 24px;">
+                    <div style="font-size: 13px; color: #1d4ed8; text-transform: uppercase; font-weight: 700;">Total Final Score</div>
+                    <div style="font-size: 32px; font-weight: 800; color: #1e3a8a;" id="totalDisplay">{{ evaluation.total_score if evaluation else 0 }} / 100</div>
+                </div>
+
+                <div class="form-group" style="margin-top: 24px;">
+                    <label>Action / Decision</label>
+                    <select name="status" class="form-control" style="font-weight: 700;">
+                        <option value="Shortlisted" {% if evaluation and evaluation.status == 'Shortlisted' %}selected{% endif %}>Shortlist Candidate</option>
+                        <option value="Selected" {% if evaluation and evaluation.status == 'Selected' %}selected{% endif %}>Hire / Select</option>
+                        <option value="Rejected" {% if evaluation and evaluation.status == 'Rejected' %}selected{% endif %}>Reject</option>
+                        <option value="Pending" {% if not evaluation or evaluation.status == 'Pending' %}selected{% endif %}>Keep Pending</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Feedback to Candidate</label>
+                    <textarea name="feedback" class="form-control" style="min-height: 80px;" placeholder="Great job on the algorithm, but try to use more descriptive variable names next time...">{{ evaluation.feedback if evaluation else '' }}</textarea>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; font-size: 16px; padding: 14px;">
+                    <i class="fas fa-check-circle"></i> Save Evaluation
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+    <!-- Hidden Data Storage -->
+    <div id="eval-data" class="hidden"
+        data-easy-sol="{{ (submission['solution_easy'] if submission['solution_easy'] else '# No solution provided') }}"
+        data-med-sol="{{ (submission['solution_medium'] if submission['solution_medium'] else '# No solution provided') }}"
+        data-hard-sol="{{ (submission['solution_hard'] if submission['solution_hard'] else '# No solution provided') }}"
+        data-easy-desc="{{ submission['desc_easy'] or 'No description' }}"
+        data-med-desc="{{ submission['desc_medium'] or 'No description' }}"
+        data-hard-desc="{{ submission['desc_hard'] or 'No description' }}"
+        data-lang="{{ submission['language'] }}">
+    </div>
+
+    <script>
+        const evalData = document.getElementById('eval-data').dataset;
+        const solutions = {
+            easy: evalData.easySol,
+            medium: evalData.medSol,
+            hard: evalData.hardSol
+        };
+        const descriptions = {
+            easy: evalData.easyDesc,
+            medium: evalData.medDesc,
+            hard: evalData.hardDesc
+        };
+        const lang = evalData.lang;
+
+        // 1. Setup Read-Only Ace Editor
+        const editor = ace.edit("editor");
+        editor.setTheme("ace/theme/dracula");
+        editor.setReadOnly(true); 
+        editor.setFontSize("14px");
+        
+        const modeMap = {
+            "Python": "ace/mode/python",
+            "C": "ace/mode/c_cpp",
+            "C++": "ace/mode/c_cpp",
+            "Java": "ace/mode/java",
+            "JavaScript": "ace/mode/javascript"
+        };
+        editor.session.setMode(modeMap[lang] || "ace/mode/python");
+        editor.setValue(solutions.easy, -1);
+
+        function viewSolution(level) {
+            document.querySelectorAll('.level-tab').forEach(t => {
+                t.style.borderBottomColor = 'transparent';
+                t.style.background = 'transparent';
+                t.style.color = '#64748b';
+            });
+            const colors = { easy: '#10b981', medium: '#f59e0b', hard: '#ef4444' };
+            const activeTab = document.getElementById('tab-' + level);
+            activeTab.style.borderBottomColor = colors[level];
+            activeTab.style.background = colors[level] + '0d';
+            activeTab.style.color = colors[level];
+
+            document.getElementById('problemDesc').innerText = descriptions[level];
+            document.getElementById('problemDesc').style.borderLeftColor = colors[level];
+            editor.setValue(solutions[level], -1);
+        }
+
+        function updateScores() {
+            const s = parseInt(document.getElementById("solScore").value);
+            const v = parseInt(document.getElementById("verScore").value);
+            document.getElementById("solDisplay").innerText = s + "/50";
+            document.getElementById("verDisplay").innerText = v + "/50";
+            document.getElementById("totalDisplay").innerText = (s + v) + " / 100";
+        }
+
+        function runCode() {
+            const terminal = document.getElementById("terminal");
+            terminal.style.display = "block";
+            terminal.className = "terminal-box";
+            terminal.innerText = "Executing student code...\n";
+
+            fetch("/api/run_code", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: editor.getValue(), language: lang })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.error) {
+                    terminal.className = "terminal-box terminal-error";
+                    terminal.innerText += data.error;
+                } else {
+                    terminal.innerText += data.output || "[Code ran successfully but produced no output]";
+                }
+            })
+            .catch(err => {
+                terminal.className = "terminal-box terminal-error";
+                terminal.innerText += "Network error executing code.";
+            });
+        }
+    </script>
+
+
+</body>
+<script>
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+hamburgerBtn.addEventListener('click', () => {
+    hamburgerBtn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('visible');
+});
+sidebarOverlay.addEventListener('click', () => {
+    hamburgerBtn.classList.remove('open');
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+});
+</script>
+
+</html>

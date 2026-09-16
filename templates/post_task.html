@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Post Assessment Suite</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .mt-2 { margin-top: 8px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('company_dashboard') }}">
+            <i class="fas fa-home"></i> Dashboard
+        </a></li>
+        <li><a href="{{ url_for('post_task') }}" class="active">
+            <i class="fas fa-plus-circle"></i> Post Task
+        </a></li>
+        <li><a href="{{ url_for('manage_tasks') }}">
+            <i class="fas fa-tasks"></i> Manage Tasks
+        </a></li>
+        <li><a href="{{ url_for('view_submissions') }}">
+            <i class="fas fa-users"></i> Submissions
+        </a></li>
+        <li><a href="{{ url_for('reports') }}">
+            <i class="fas fa-chart-pie"></i> Reports
+        </a></li>
+        <li><a href="{{ url_for('logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a></li>
+    </ul>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    <div class="topbar">
+        <h2>Post Multi-Level Assessment</h2>
+        <div class="topbar-right">
+            <span>{{ user_name }}</span>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('post_task') }}" style="max-width: 1000px;">
+        
+        <!-- SECTION 1: Assessment Header -->
+        <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-layer-group"></i> Assessment Overview</div>
+            <div class="form-group">
+                <label>Assessment Title</label>
+                <input type="text" name="title" class="form-control" placeholder="e.g. Full Stack Developer Test" required>
+            </div>
+            <div class="form-group">
+                <label>General Context / Guidelines</label>
+                <textarea name="description" class="form-control" placeholder="Shared instructions for all 3 levels..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Total Time Limit (Minutes)</label>
+                <input type="number" name="time_limit" class="form-control" value="60" required>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; border-top: 1px solid #334155; padding-top: 20px;">
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-alt"></i> Window Starts (Optional)</label>
+                    <input type="datetime-local" name="start_time" class="form-control">
+                    <small style="color:#64748b;">Candidate cannot start before this time.</small>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-times"></i> Window Ends (Optional)</label>
+                    <input type="datetime-local" name="end_time" class="form-control">
+                    <small style="color:#64748b;">Candidate cannot start after this time.</small>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- SECTION: EASY -->
+        <div class="form-section" style="border-left: 5px solid #10b981;">
+            <div class="form-section-title" style="color: #10b981;"><i class="fas fa-star"></i> Level 1: EASY QUESTION</div>
+            <div class="form-group">
+                <label>Easy Problem Description</label>
+                <textarea name="desc_easy" class="form-control" placeholder="The basic problem to solve..." required></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                {% for v in ['A', 'B', 'C'] %}
+                <div class="variant-box">
+                    <div class="variant-title">Variant {{ v }}</div>
+                    <textarea name="easy_v{{ loop.index }}" class="form-control" placeholder="Unique constraint or wording for this variant..." required></textarea>
+                    <textarea name="easy_in{{ loop.index }}" class="form-control mt-2" style="min-height: 40px;" placeholder="Sample Input"></textarea>
+                    <textarea name="easy_out{{ loop.index }}" class="form-control mt-2" style="min-height: 40px;" placeholder="Expected Output"></textarea>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- SECTION: MEDIUM -->
+        <div class="form-section" style="border-left: 5px solid #f59e0b;">
+            <div class="form-section-title" style="color: #f59e0b;"><i class="fas fa-star-half-alt"></i> Level 2: MEDIUM QUESTION</div>
+            <div class="form-group">
+                <label>Medium Problem Description</label>
+                <textarea name="desc_medium" class="form-control" placeholder="A more complex challenge..." required></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                {% for v in ['A', 'B', 'C'] %}
+                <div class="variant-box">
+                    <div class="variant-title">Variant {{ v }}</div>
+                    <textarea name="med_v{{ loop.index }}" class="form-control" placeholder="Unique constraint or wording for this variant..." required></textarea>
+                    <textarea name="med_in{{ loop.index }}" class="form-control mt-2" style="min-height: 40px;" placeholder="Sample Input"></textarea>
+                    <textarea name="med_out{{ loop.index }}" class="form-control mt-2" style="min-height: 40px;" placeholder="Expected Output"></textarea>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- SECTION: HARD -->
+        <div class="form-section" style="border-left: 5px solid #ef4444;">
+            <div class="form-section-title" style="color: #ef4444;"><i class="fas fa-star"></i> Level 3: HARD QUESTION</div>
+            <div class="form-group">
+                <label>Hard Problem Description</label>
+                <textarea name="desc_hard" class="form-control" placeholder="The ultimate technical test..." required></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                {% for v in ['A', 'B', 'C'] %}
+                <div class="variant-box">
+                    <div class="variant-title">Variant {{ v }}</div>
+                    <textarea name="hard_v{{ loop.index }}" class="form-control" placeholder="Unique constraint or wording for this variant..." required></textarea>
+                    <textarea name="hard_in{{ loop.index }}" class="form-control mt-2" style="min-height: 40px;" placeholder="Sample Input"></textarea>
+                    <textarea name="hard_out{{ loop.index }}" class="form-control mt-2" style="min-height: 40px;" placeholder="Expected Output"></textarea>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+
+        <!-- SECTION: VERIFICATION -->
+        <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-user-check"></i> Final Verification Questions</div>
+            {% for i in range(1, 4) %}
+            <div class="variant-box" style="margin-bottom: 15px;">
+                <input type="text" name="q{{ i }}" class="form-control" placeholder="Question {{ i }}" required>
+                <textarea name="q{{ i }}_expected" class="form-control mt-2" style="min-height: 50px;" placeholder="Expected keywords..." required></textarea>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-bottom: 60px; width: 100%; padding: 20px; font-size: 18px;">
+            <i class="fas fa-rocket"></i> Publish Assessment Suite
+        </button>
+    </form>
+</div>
+
+</body>
+<script>
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+hamburgerBtn.addEventListener('click', () => {
+    hamburgerBtn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('visible');
+});
+sidebarOverlay.addEventListener('click', () => {
+    hamburgerBtn.classList.remove('open');
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+});
+</script>
+</html>

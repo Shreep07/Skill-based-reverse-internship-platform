@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Candidates</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('company_dashboard') }}">
+            <i class="fas fa-home"></i> Dashboard
+        </a></li>
+        <li><a href="{{ url_for('post_task') }}">
+            <i class="fas fa-plus-circle"></i> Post Task
+        </a></li>
+        <li><a href="{{ url_for('manage_tasks') }}">
+            <i class="fas fa-tasks"></i> Manage Tasks
+        </a></li>
+        <li><a href="{{ url_for('view_submissions') }}">
+            <i class="fas fa-users"></i> Submissions
+        </a></li>
+        <li><a href="{{ url_for('candidates') }}" class="active">
+            <i class="fas fa-user-check"></i> Candidates
+        </a></li>
+                <li><a href="{{ url_for('reports') }}">
+            <i class="fas fa-chart-pie"></i> Reports
+        </a></li>
+
+        <li><a href="{{ url_for('logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="topbar">
+        <h2>Applicant Tracking</h2>
+        <div class="topbar-right">
+            <span>{{ user_name }}</span>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <!-- Tabs Header -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab(event, 'all')">All Candidates ({{ total }})</div>
+            <div class="tab" onclick="switchTab(event, 'shortlisted')">Shortlisted ({{ total_short }})</div>
+            <div class="tab" onclick="switchTab(event, 'selected')">Selected ({{ total_select }})</div>
+            <div class="tab" onclick="switchTab(event, 'rejected')">Rejected ({{ total_reject }})</div>
+        </div>
+
+        <!-- Tab Content Macro (So we don't repeat the table HTML 4 times!) -->
+        {% macro render_table(candidate_list) %}
+            {% if candidate_list %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Candidate</th>
+                            <th>Task</th>
+                            <th>Score</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in candidate_list %}
+                        <tr>
+                            <td style="font-weight: 800; color: var(--primary);">#{{ loop.index }}</td>
+                            <td>
+                                <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px;">{{ c.student_name }}</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">{{ c.student_email }}</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: var(--text-main); margin-bottom: 4px;">{{ c.task_title }}</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">{{ c.difficulty }}</div>
+                            </td>
+                            <td>
+                                <strong style="font-size: 16px;">{{ c.total_score }}</strong> <span style="font-size: 12px; color: var(--text-muted);">/ 100</span>
+                            </td>
+                            <td>
+                                {% if c.status == 'Pending' %}
+                                    <span class="status-badge status-pending">Pending Review</span>
+                                {% elif c.status == 'Shortlisted' %}
+                                    <span class="status-badge status-shortlisted">Shortlisted</span>
+                                {% elif c.status == 'Selected' %}
+                                    <span class="status-badge status-selected">Selected</span>
+                                {% elif c.status == 'Rejected' %}
+                                    <span class="status-badge status-rejected">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <select class="status-select" onchange="window.location.href=this.value">
+                                    <option value="" disabled selected>Update Status...</option>
+                                    <option value="{{ url_for('update_candidate_status', eval_id=c.eval_id, new_status='Shortlisted') }}">Mark Shortlisted</option>
+                                    <option value="{{ url_for('update_candidate_status', eval_id=c.eval_id, new_status='Selected') }}">Mark Selected</option>
+                                    <option value="{{ url_for('update_candidate_status', eval_id=c.eval_id, new_status='Rejected') }}">Mark Rejected</option>
+                                    <option value="{{ url_for('update_candidate_status', eval_id=c.eval_id, new_status='Pending') }}">Mark Pending</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>No candidates in this list.</p>
+                </div>
+            {% endif %}
+        {% endmacro %}
+
+        <!-- Tab Contents -->
+        <div id="all" class="tab-content active">
+            {{ render_table(all_candidates) }}
+        </div>
+        <div id="shortlisted" class="tab-content">
+            {{ render_table(shortlisted) }}
+        </div>
+        <div id="selected" class="tab-content">
+            {{ render_table(selected) }}
+        </div>
+        <div id="rejected" class="tab-content">
+            {{ render_table(rejected) }}
+        </div>
+
+    </div>
+</div>
+
+<script>
+function switchTab(evt, tabName) {
+    // Hide all tab contents
+    var contents = document.getElementsByClassName("tab-content");
+    for (var i = 0; i < contents.length; i++) {
+        contents[i].className = contents[i].className.replace(" active", "");
+    }
+    
+    // Remove active class from all tabs
+    var tabs = document.getElementsByClassName("tab");
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].className = tabs[i].className.replace(" active", "");
+    }
+    
+    // Show the current tab, and add an "active" class to the button
+    document.getElementById(tabName).className += " active";
+    evt.currentTarget.className += " active";
+}
+</script>
+
+</body>
+<script>
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+hamburgerBtn.addEventListener('click', () => {
+    hamburgerBtn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('visible');
+});
+sidebarOverlay.addEventListener('click', () => {
+    hamburgerBtn.classList.remove('open');
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+});
+</script>
+
+</html>

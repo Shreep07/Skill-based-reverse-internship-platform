@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Reports & Analytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('company_dashboard') }}">
+            <i class="fas fa-home"></i> Dashboard
+        </a></li>
+        <li><a href="{{ url_for('post_task') }}">
+            <i class="fas fa-plus-circle"></i> Post Task
+        </a></li>
+        <li><a href="{{ url_for('manage_tasks') }}">
+            <i class="fas fa-tasks"></i> Manage Tasks
+        </a></li>
+        <li><a href="{{ url_for('view_submissions') }}">
+            <i class="fas fa-users"></i> Submissions
+        </a></li>
+        <li><a href="{{ url_for('candidates') }}">
+            <i class="fas fa-user-check"></i> Candidates
+        </a></li>
+        <li><a href="{{ url_for('reports') }}" class="active">
+            <i class="fas fa-chart-pie"></i> Reports
+        </a></li>
+        <li><a href="{{ url_for('logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="topbar">
+        <h2>Analytics & Reports</h2>
+        <div class="topbar-right">
+            <span>{{ user_name }}</span>
+        </div>
+    </div>
+
+    <!-- Average Scores Grid -->
+    <div class="stats-grid">
+        <div class="stat-card" style="text-align: center;">
+            <div class="stat-icon blue" style="margin: 0 auto 14px;"><i class="fas fa-code"></i></div>
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing:.06em;">Avg. Code Quality</div>
+            <div style="font-size: 34px; font-weight: 800; color: #818cf8; margin: 8px 0;">
+                {% if avg and avg['avg_sol'] %}{{ "%.1f"|format(avg['avg_sol']) }}{% else %}0.0{% endif %} <span style="font-size: 14px; color: var(--text-muted);">/ 50</span>
+            </div>
+        </div>
+
+        <div class="stat-card" style="text-align: center;">
+            <div class="stat-icon yellow" style="margin: 0 auto 14px;"><i class="fas fa-brain"></i></div>
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing:.06em;">Avg. Conceptual Understanding</div>
+            <div style="font-size: 34px; font-weight: 800; color: #fbbf24; margin: 8px 0;">
+                {% if avg and avg['avg_ver'] %}{{ "%.1f"|format(avg['avg_ver']) }}{% else %}0.0{% endif %} <span style="font-size: 14px; color: var(--text-muted);">/ 50</span>
+            </div>
+        </div>
+
+        <div class="stat-card" style="text-align: center; border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.08);">
+            <div class="stat-icon blue" style="margin: 0 auto 14px;"><i class="fas fa-star"></i></div>
+            <div style="font-size: 12px; color: #a5b4fc; text-transform: uppercase; font-weight: 700; letter-spacing:.06em;">Overall Average Score</div>
+            <div style="font-size: 34px; font-weight: 800; color: #a5b4fc; margin: 8px 0;">
+                {% if avg and avg['avg_tot'] %}{{ "%.1f"|format(avg['avg_tot']) }}{% else %}0.0{% endif %} <span style="font-size: 14px; color: var(--text-muted);">/ 100</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div style="display: flex; gap: 24px;">
+        
+        <!-- Bar Chart (Takes 2/3 of space) -->
+        <div class="card" style="flex: 2;">
+            <h3 style="margin-bottom: 24px;"><i class="fas fa-chart-bar"></i> Submissions per Task</h3>
+            <canvas id="barChart" height="120"></canvas>
+        </div>
+
+        <!-- Pie Chart (Takes 1/3 of space) -->
+        <div class="card" style="flex: 1;">
+            <h3 style="margin-bottom: 24px;"><i class="fas fa-chart-pie"></i> Candidate Funnel</h3>
+            <canvas id="pieChart" height="200"></canvas>
+        </div>
+
+    </div>
+</div>
+
+<!-- HIDDEN DATA ELEMENT (Fixes Javascript/tojson errors!) -->
+<div id="chartData" 
+     data-bar-labels='{{ bar_labels | tojson | safe }}'
+     data-bar-data='{{ bar_data | tojson | safe }}'
+     data-pie-labels='{{ pie_labels | tojson | safe }}'
+     data-pie-data='{{ pie_data | tojson | safe }}'
+     style="display: none;">
+</div>
+
+<script>
+    // 1. Extract data safely from the hidden HTML div
+    const dataElement = document.getElementById('chartData');
+    const barLabels = JSON.parse(dataElement.getAttribute('data-bar-labels') || "[]");
+    const barData = JSON.parse(dataElement.getAttribute('data-bar-data') || "[]");
+    const pieLabels = JSON.parse(dataElement.getAttribute('data-pie-labels') || "[]");
+    const pieData = JSON.parse(dataElement.getAttribute('data-pie-data') || "[]");
+
+    // 2. Bar Chart Setup
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: barLabels,
+            datasets: [{
+                label: 'Total Submissions',
+                data: barData,
+                backgroundColor: 'rgba(99,102,241,0.7)',
+                borderColor: '#6366f1',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#94a3b8' } } },
+            scales: {
+                x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.5)' } },
+                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.5)' } }
+            }
+        }
+    });
+
+    // 3. Pie Chart Setup
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    
+    // Assign specific colors to specific statuses to match our badging
+    const colorMap = {
+        'Pending': '#facc15',      // Yellow
+        'Shortlisted': '#4f46e5',  // Indigo
+        'Selected': '#10b981',     // Green
+        'Rejected': '#ef4444'      // Red
+    };
+    
+    const pieColors = pieLabels.map(label => colorMap[label] || '#94a3b8');
+
+    new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: pieLabels,
+            datasets: [{
+                data: pieData,
+                backgroundColor: pieColors,
+                borderWidth: 2,
+                borderColor: '#1e293b'
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: '62%',
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 16 } }
+            }
+        }
+    });
+</script>
+
+</body>
+<script>
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+hamburgerBtn.addEventListener('click', () => {
+    hamburgerBtn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('visible');
+});
+sidebarOverlay.addEventListener('click', () => {
+    hamburgerBtn.classList.remove('open');
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+});
+</script>
+
+</html>

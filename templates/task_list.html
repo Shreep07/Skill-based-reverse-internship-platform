@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Available Tasks</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+<!-- Hamburger (mobile only) -->
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('student_dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{{ url_for('task_list') }}" class="active"><i class="fas fa-tasks"></i> My Tasks</a></li>
+        <li><a href="{{ url_for('student_jobs') }}"><i class="fas fa-briefcase"></i> Job Listings</a></li>
+        <li><a href="{{ url_for('my_applications') }}"><i class="fas fa-file-alt"></i> My Applications</a></li>
+        <li><a href="{{ url_for('my_submissions') }}"><i class="fas fa-paper-plane"></i> My Submissions</a></li>
+        <li><a href="{{ url_for('leaderboard') }}"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+        <li><a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    
+    <div class="topbar">
+        <div>
+            <h2>
+                {% if is_invited_view %}
+                    <i class="fas fa-envelope-open-text" style="color: #6366f1;"></i> Your Invited Assessments
+                {% else %}
+                    Available Tasks
+                {% endif %}
+            </h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                {% if is_invited_view %}
+                    You have been specifically invited to these assessments. Focus on these!
+                {% elif filter_applied %}
+                    Showing tasks for companies you've applied to.
+                {% else %}
+                    Explore all available skill assessments.
+                {% endif %}
+            </p>
+        </div>
+        <div class="topbar-right">
+            {% if not is_invited_view %}
+                {% if filter_applied %}
+                    <a href="{{ url_for('task_list') }}" class="btn-card" style="background: var(--card-bg); border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; font-size: 13px; text-decoration: none;">
+                        <i class="fas fa-filter"></i> Show All Tasks
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('task_list', filter_applied='true') }}" class="btn-card" style="padding: 8px 16px; font-size: 13px; text-decoration: none;">
+                        <i class="fas fa-briefcase"></i> My Applied Companies
+                    </a>
+                {% endif %}
+            {% endif %}
+            <span style="margin-left: 20px;">{{ user_name }}</span>
+        </div>
+    </div>
+
+    <!-- Task Cards Grid -->
+    <div class="task-grid">
+        {% for task in tasks %}
+        <div class="task-card">
+            
+            <div class="task-header">
+                <div>
+                    <div class="task-title">{{ task.title }}</div>
+                    <div class="task-company">
+                        <i class="fas fa-building"></i> {{ task.company_name }}
+                    </div>
+                </div>
+                
+                <!-- Difficulty Badge Logic -->
+                <div style="display: flex; gap: 8px;">
+                    {% if is_invited_view %}
+                        <span class="badge" style="background:rgba(16, 185, 129, 0.1); color:#10b981; border:1px solid #10b981; padding:4px 10px; border-radius:6px; font-size:11px; font-weight: 800;">
+                            <i class="fas fa-envelope-open"></i> INVITED
+                        </span>
+                    {% endif %}
+                    <span class="badge" style="background:rgba(99, 102, 241, 0.1); color:#6366f1; border:1px solid #6366f1; padding:4px 10px; border-radius:6px; font-size:11px;">
+                        <i class="fas fa-layer-group"></i> 3-Challenge Suite
+                    </span>
+                </div>
+            </div>
+
+            <!-- Description (Truncated if too long) -->
+            <div class="task-desc">
+                {{ task.description[:120] }}{% if task.description|length > 120 %}...{% endif %}
+            </div>
+
+            <!-- Meta Data -->
+            <div class="task-meta">
+                <div class="meta-item">
+                    <i class="fas fa-clock"></i> {{ task.time_limit }} mins
+                </div>
+                
+                <div class="lang-tags">
+                    {% for lang in task.languages_list %}
+                        <span class="lang-tag">{{ lang }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Scheduling info -->
+            {% if task.start_time or task.end_time %}
+            <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Window Status</span>
+                    
+                    {% if task.is_upcoming %}
+                        <span style="background: rgba(245,158,11,0.15); color: #f59e0b; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UPCOMING</span>
+                    {% elif task.is_ended %}
+                        <span style="background: rgba(239,68,68,0.15); color: #ef4444; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px;">ENDED</span>
+                    {% else %}
+                        <span style="background: rgba(16,185,129,0.15); color: #10b981; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px;">LIVE NOW</span>
+                    {% endif %}
+                </div>
+                
+                {% if task.start_time_pretty %}
+                <div style="font-size: 12px; color: #94a3b8; margin-bottom: 3px;">
+                    <i class="fas fa-play-circle" style="width: 16px; color: #10b981;"></i> Starts: <span style="color: #cbd5e1; font-weight: 600;">{{ task.start_time_pretty }}</span>
+                </div>
+                {% endif %}
+                
+                {% if task.end_time_pretty %}
+                <div style="font-size: 12px; color: #94a3b8;">
+                    <i class="fas fa-stop-circle" style="width: 16px; color: #ef4444;"></i> Ends: <span style="color: #cbd5e1; font-weight: 600;">{{ task.end_time_pretty }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Action Button -->
+            {% if task.is_upcoming %}
+                <button class="btn-card" disabled style="opacity: 0.5; cursor: not-allowed; filter: grayscale(1);">Coming Soon</button>
+            {% elif task.is_ended %}
+                <button class="btn-card" disabled style="opacity: 0.5; cursor: not-allowed; filter: grayscale(1);">Assessment Closed</button>
+            {% else %}
+                {% if task.id in assigned_ids %}
+                    <a href="{{ url_for('start_task', task_id=task.id) }}" class="btn-card started">Resume Task</a>
+                {% else %}
+                    <a href="{{ url_for('start_task', task_id=task.id) }}" class="btn-card">Start Task</a>
+                {% endif %}
+            {% endif %}
+
+
+
+        </div>
+        {% else %}
+            <!-- Fallback if no tasks exist -->
+            <div style="grid-column: 1 / -1;" class="empty-state">
+                <i class="fas fa-box-open" style="font-size: 48px; color: #cbd5e1; margin-bottom: 16px; display: block;"></i>
+                <h3>No Tasks Found</h3>
+                {% if filter_applied %}
+                    <p>None of the companies you've applied to have active task suites currently.</p>
+                    <a href="{{ url_for('student_jobs') }}" class="btn-card" style="display: inline-block; margin-top: 15px; width: auto; padding: 10px 20px; text-decoration: none;">Explore Job Listings</a>
+                {% else %}
+                    <p>There are currently no active tasks to display. Check back later!</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+</body>
+
+<script>
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+hamburgerBtn.addEventListener('click', () => {
+    hamburgerBtn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('visible');
+});
+sidebarOverlay.addEventListener('click', () => {
+    hamburgerBtn.classList.remove('open');
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+});
+</script>
+
+</html>

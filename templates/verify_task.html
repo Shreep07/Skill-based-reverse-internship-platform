@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Verification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="#" style="opacity: 0.5; pointer-events: none;">
+            <i class="fas fa-home"></i> Dashboard
+        </a></li>
+        <li><a href="#" style="opacity: 0.5; pointer-events: none;">
+            <i class="fas fa-tasks"></i> My Tasks
+        </a></li>
+        <!-- Locked sidebar so they can't easily click away during the test -->
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="verification-container">
+        
+        <div class="topbar">
+            <h2>Verify Your Understanding</h2>
+            <div class="topbar-right">
+                <!-- 5 Minute Timer -->
+                <div class="timer-badge" id="verificationTimer">
+                    <i class="fas fa-stopwatch"></i> <span>05:00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="verification-card">
+            <p style="color: var(--text-muted); margin-bottom: 24px;">
+                Please answer the following conceptual questions to verify your submitted code. 
+                <strong>You have 5 minutes.</strong> If the timer expires, your answers will be automatically submitted.
+            </p>
+
+            <form id="verifyForm" method="POST" action="{{ url_for('verify_task', submission_id=submission_id) }}">
+                
+                {% for q in questions %}
+                <div class="question-box">
+                    <div class="question-text">
+                        <span class="q-num">{{ loop.index }}</span>
+                        <span>{{ q.question }}</span>
+                    </div>
+                    
+                    <!-- Text Area for Written Response -->
+                    <textarea 
+                        name="q_{{ q.id }}" 
+                        class="verify-textarea" 
+                        placeholder="Type your explanation here..."
+                        required
+                    ></textarea>
+                </div>
+                {% endfor %}
+
+                <div style="text-align: right; margin-top: 24px;">
+                    <button type="submit" class="btn-primary" style="padding: 14px 32px; font-size: 16px;">
+                        <i class="fas fa-check-double"></i> Submit Verification
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // 5-Minute Timer (300 seconds)
+    var timeLeft = 300; 
+
+    var timerInterval = setInterval(function() {
+        timeLeft--;
+        
+        var minutes = Math.floor(timeLeft / 60);
+        var seconds = timeLeft % 60;
+        
+        // Add leading zero if needed
+        if(minutes < 10) minutes = "0" + minutes;
+        if(seconds < 10) seconds = "0" + seconds;
+        
+        document.querySelector("#verificationTimer span").innerText = minutes + ":" + seconds;
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            document.querySelector("#verificationTimer span").innerText = "00:00";
+            document.getElementById("verificationTimer").style.background = "#991b1b"; // Dark red
+            document.getElementById("verificationTimer").style.color = "white";
+            
+            // Auto Submit Form
+            document.getElementById("verifyForm").submit();
+        }
+    }, 1000);
+</script>
+
+</body>
+<script>
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+hamburgerBtn.addEventListener('click', () => {
+    hamburgerBtn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('visible');
+});
+sidebarOverlay.addEventListener('click', () => {
+    hamburgerBtn.classList.remove('open');
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+});
+</script>
+
+</html>

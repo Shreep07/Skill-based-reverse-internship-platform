@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Student Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Load FontAwesome for the sidebar icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+<!-- Hamburger (mobile only) -->
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('student_dashboard') }}" class="active">
+            <i class="fas fa-home"></i> Dashboard
+        </a></li>
+               <li><a href="{{ url_for('task_list') }}">
+            <i class="fas fa-tasks"></i> My Tasks
+        </a></li>
+        <li><a href="{{ url_for('student_jobs') }}">
+            <i class="fas fa-briefcase"></i> Job Listings
+        </a></li>
+        <li><a href="{{ url_for('my_applications') }}">
+            <i class="fas fa-file-alt"></i> My Applications
+        </a></li>
+        <li><a href="{{ url_for('my_submissions') }}">
+            <i class="fas fa-paper-plane"></i> My Submissions
+        </a></li>
+        <li><a href="{{ url_for('leaderboard') }}">
+            <i class="fas fa-trophy"></i> Leaderboard
+        </a></li>
+                <li><a href="{{ url_for('profile') }}">
+            <i class="fas fa-user"></i> Profile
+        </a></li>
+
+        <li><a href="{{ url_for('logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a></li>
+    </ul>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    
+    {% if hiring_alerts %}
+    <div class="card" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); border: none; margin-bottom: 25px;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff;">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div>
+                <h3 style="color: #fff; margin: 0; font-size: 20px; font-weight: 800;">Congratulations!</h3>
+                {% for alert in hiring_alerts %}
+                <p style="color: #a7f3d0; margin: 5px 0 0 0; font-size: 15px;">
+                    You have been <strong>Selected/Hired</strong> by <strong>{{ alert.company_name }}</strong> for the <strong>{{ alert.title }}</strong> assessment.
+                </p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="topbar">
+
+        <h2>Overview</h2>
+        <div class="topbar-right">
+            <span>Welcome, {{ user_name }}! 👋</span>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <span class="stat-number">{{ available }}</span>
+            <span class="stat-label">Available Tasks</span>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon yellow">
+                <i class="fas fa-file-code"></i>
+            </div>
+            <span class="stat-number">{{ submitted }}</span>
+            <span class="stat-label">Tasks Submitted</span>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <span class="stat-number">{{ evaluated }}</span>
+            <span class="stat-label">Tasks Evaluated</span>
+        </div>
+    </div>
+
+    <!-- Deadlines Section -->
+    <div class="card">
+        <h3><i class="fas fa-clock"></i> Upcoming Deadlines</h3>
+        
+        {% if deadlines %}
+            <ul style="list-style: none; padding: 0;">
+            {% for d in deadlines %}
+                <li style="padding: 12px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                    <strong>{{ d.title }}</strong>
+                    <span style="color: #dc2626; font-weight: 600;">{{ d.deadline }}</span>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <div class="empty-state">
+                <p>No upcoming deadlines. You're all caught up!</p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+
+<script>
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+hamburgerBtn.addEventListener('click', () => {
+    hamburgerBtn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('visible');
+});
+sidebarOverlay.addEventListener('click', () => {
+    hamburgerBtn.classList.remove('open');
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+});
+</script>
+
+</html>

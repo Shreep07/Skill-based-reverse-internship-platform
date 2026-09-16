@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire – {{ assignment['title'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ace.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #f1f5f9; height: 100vh; display: flex; flex-direction: column; overflow: hidden; margin:0; }
+        .solve-topbar { height: 58px; background: #1e293b; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; }
+        .level-selector { display: flex; background: #0f172a; border-bottom: 1px solid #334155; height: 45px; }
+        .level-tab { flex: 1; border: none; background: transparent; color: #64748b; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; border-bottom: 3px solid transparent; }
+        .level-tab:hover { color: #f8fafc; background: rgba(255,255,255,0.02); }
+        .level-tab.active { color: #fff; border-bottom-color: #6366f1; background: rgba(99, 102, 241, 0.1); }
+
+        .solve-body { flex: 1; display: flex; overflow: hidden; }
+        .problem-panel { width: 400px; background: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; }
+        .problem-scroll { flex: 1; overflow-y: auto; padding: 20px; }
+        .editor-panel { flex: 1; display: flex; flex-direction: column; background: #1e1e1e; }
+        .editor-topbar { background: #252526; border-bottom: 1px solid #1a1a1a; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; height: 44px; }
+        .editor-wrapper { flex: 1; position: relative; }
+        #codeEditor { position: absolute; inset: 0; font-size: 14px; }
+
+        .terminal-panel { height: 0; background: #0d1117; border-top: 2px solid #1e293b; transition: height 0.3s; overflow: hidden; }
+        .terminal-panel.open { height: 200px; }
+        .terminal-header { background: #161b22; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; color: #58a6ff; font-size: 12px; font-weight: bold; }
+
+        .btn-run { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-run:hover { opacity: 0.9; }
+        .btn-submit { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        
+        .timer-widget { background: #0f172a; padding: 5px 15px; border-radius: 8px; border: 1px solid #334155; min-width: 100px; text-align: center; }
+        #timer { font-family: 'JetBrains Mono'; font-weight: bold; font-size: 18px; color: #6366f1; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+
+<body>
+    <div class="solve-topbar">
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div style="font-weight:800; color:#fff; font-size:1.2rem;">⚡ SkillHire</div>
+            <div style="background:rgba(99,102,241,0.1); color:#818cf8; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid rgba(99,102,241,0.2);">
+                {{ assignment['title'] }} • {{ assignment['company_name'] }}
+            </div>
+        </div>
+        
+        <div class="timer-widget">
+            <span style="font-size:9px; color:#64748b; display:block; letter-spacing:1px;">TIME REMAINING</span>
+            <div id="timer">00:00:00</div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div id="saveStatus" style="color:#64748b; font-size:11px; font-family:'JetBrains Mono';">
+                <i class="fas fa-check-circle"></i> Saved
+            </div>
+            <button class="btn-submit" onclick="finalSubmit()">Finish & Submit</button>
+        </div>
+    </div>
+
+    <div class="level-selector">
+        <button class="level-tab active" id="tab-easy" onclick="switchLevel('easy')">
+            <i class="fas fa-leaf"></i> Level 1: Easy
+        </button>
+        <button class="level-tab" id="tab-medium" onclick="switchLevel('medium')">
+            <i class="fas fa-mountain"></i> Level 2: Medium
+        </button>
+        <button class="level-tab" id="tab-hard" onclick="switchLevel('hard')">
+            <i class="fas fa-fire"></i> Level 3: Hard
+        </button>
+    </div>
+
+    <div class="solve-body">
+        <div class="problem-panel">
+            <div class="problem-scroll">
+                <div id="prob-easy">
+                    <h3 style="color:#10b981;"><i class="fas fa-check-circle"></i> Easy Challenge</h3>
+                    <p style="white-space: pre-wrap; line-height:1.6;">{{ v_easy['variant_description'] if v_easy else 'No description.' }}</p>
+                    <div style="background:#0f172a; padding:15px; border-radius:8px; border:1px solid #334155;">
+                        <small style="color:#64748b; font-weight:bold;">EXPECTED OUTPUT</small>
+                        <pre style="color:#94a3b8; font-size:12px; margin:8px 0 0 0;">{{ v_easy['sample_output'] if v_easy else 'N/A' }}</pre>
+                    </div>
+                </div>
+
+                <div id="prob-medium" class="hidden">
+                    <h3 style="color:#f59e0b;"><i class="fas fa-star"></i> Medium Challenge</h3>
+                    <p style="white-space: pre-wrap; line-height:1.6;">{{ v_med['variant_description'] if v_med else 'No description.' }}</p>
+                    <div style="background:#0f172a; padding:15px; border-radius:8px; border:1px solid #334155;">
+                        <small style="color:#64748b; font-weight:bold;">EXPECTED OUTPUT</small>
+                        <pre style="color:#94a3b8; font-size:12px; margin:8px 0 0 0;">{{ v_med['sample_output'] if v_med else 'N/A' }}</pre>
+                    </div>
+                </div>
+
+                <div id="prob-hard" class="hidden">
+                    <h3 style="color:#ef4444;"><i class="fas fa-bolt"></i> Hard Challenge</h3>
+                    <p style="white-space: pre-wrap; line-height:1.6;">{{ v_hard['variant_description'] if v_hard else 'No description.' }}</p>
+                    <div style="background:#0f172a; padding:15px; border-radius:8px; border:1px solid #334155;">
+                        <small style="color:#64748b; font-weight:bold;">EXPECTED OUTPUT</small>
+                        <pre style="color:#94a3b8; font-size:12px; margin:8px 0 0 0;">{{ v_hard['sample_output'] if v_hard else 'N/A' }}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel">
+            <div class="editor-topbar">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-file-code" style="color:#9cdcfe;"></i>
+                    <span id="fileName" style="font-family:'JetBrains Mono'; font-size:12px; color:#9cdcfe;">solution.py</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <select id="langSelect" style="background:#0f172a; color:#fff; border:1px solid #334155; font-size:11px; padding:3px 8px; border-radius:4px;" onchange="updateEditorMode()">
+                        <option value="Python" {% if assignment['language'] == 'Python' %}selected{% endif %}>Python</option>
+                        <option value="Java" {% if assignment['language'] == 'Java' %}selected{% endif %}>Java</option>
+                        <option value="C" {% if assignment['language'] == 'C' %}selected{% endif %}>C</option>
+                        <option value="C++" {% if assignment['language'] == 'C++' %}selected{% endif %}>C++</option>
+                        <option value="JavaScript" {% if assignment['language'] == 'JavaScript' %}selected{% endif %}>JavaScript</option>
+                    </select>
+                    <button class="btn-run" onclick="runCode()"><i class="fas fa-play"></i> Run</button>
+                </div>
+            </div>
+            <div class="editor-wrapper">
+                <div id="codeEditor"></div>
+            </div>
+            <div class="terminal-panel" id="terminal">
+                <div class="terminal-header">
+                    <span>EXECUTION OUTPUT</span>
+                    <button onclick="document.getElementById('terminal').classList.remove('open')" style="background:transparent; border:none; color:#64748b; cursor:pointer;">&times;</button>
+                </div>
+                <div style="padding:15px; font-family:'JetBrains Mono'; font-size:13px; color:#c9d1d9; white-space:pre-wrap;" id="outputBox"></div>
+            </div>
+        </div>
+    </div>
+
+    <form id="submitForm" method="POST" action="{{ url_for('solve_task', assignment_id=assignment['assignment_id']) }}" class="hidden">
+        <textarea name="solution_easy" id="sol-easy-field"></textarea>
+        <textarea name="solution_medium" id="sol-med-field"></textarea>
+        <textarea name="solution_hard" id="sol-hard-field"></textarea>
+    </form>
+
+    <div id="assignment-data" 
+         data-id="{{ assignment['assignment_id'] }}" 
+         data-lang="{{ assignment['language'] }}"
+         data-deadline="{{ deadline_iso }}"
+         class="hidden">
+    </div>
+
+    <!-- Storage for initial solutions to avoid red lines in editor -->
+    <div class="hidden">
+        <textarea id="data-easy">{{ (existing_submission['solution_easy'] or existing_submission['autosave_easy'] or "") }}</textarea>
+        <textarea id="data-medium">{{ (existing_submission['solution_medium'] or existing_submission['autosave_medium'] or "") }}</textarea>
+        <textarea id="data-hard">{{ (existing_submission['solution_hard'] or existing_submission['autosave_hard'] or "") }}</textarea>
+    </div>
+
+    <script>
+        const ASSIGNMENT_DATA = document.getElementById('assignment-data');
+        const ASSIGNMENT_ID = ASSIGNMENT_DATA.dataset.id;
+        const ASSIGNMENT_LANG = ASSIGNMENT_DATA.dataset.lang;
+        let currentLevel = 'easy';
+
+        const solutions = {
+            easy: document.getElementById('data-easy').value,
+            medium: document.getElementById('data-medium').value,
+            hard: document.getElementById('data-hard').value
+        };
+
+        const defaults = {
+            "Python": "def solution():\n    # Write code here\n    print('Hello')\n\nsolution()",
+            "Java": "public class Solution {\n    public static void main(String[] args) {\n        System.out.println(\"Hello\");\n    }\n}",
+            "C": "#include <stdio.h>\n\nint main() {\n    printf(\"Hello\\n\");\n    return 0;\n}",
+            "C++": "#include <iostream>\n\nint main() {\n    std::cout << \"Hello\" << std::endl;\n    return 0;\n}",
+            "JavaScript": "console.log('Hello');"
+        };
+
+        const editor = ace.edit("codeEditor");
+        editor.setTheme("ace/theme/tomorrow_night_eighties");
+        
+        function updateEditorMode() {
+            const lang = document.getElementById('langSelect').value;
+            const modeMap = { "Python": "python", "Java": "java", "C": "c_cpp", "C++": "c_cpp", "JavaScript": "javascript" };
+            editor.session.setMode("ace/mode/" + (modeMap[lang] || "python"));
+            
+            // Force 4 spaces for Python to prevent Indentation/Syntax Errors
+            editor.setOptions({
+                tabSize: 4,
+                useSoftTabs: true
+            });
+
+            document.getElementById('fileName').innerText = "solution." + (lang === "Python" ? "py" : (lang === "JavaScript" ? "js" : lang.toLowerCase()));
+            if (!editor.getValue().trim()) editor.setValue(defaults[lang], -1);
+        }
+
+        if (!solutions.easy) solutions.easy = defaults[ASSIGNMENT_LANG] || defaults["Python"];
+        editor.setValue(solutions.easy, -1);
+        updateEditorMode();
+
+        function switchLevel(level) {
+            solutions[currentLevel] = editor.getValue();
+            document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab-${level}`).classList.add('active');
+            document.querySelectorAll('.problem-scroll > div[id^="prob-"]').forEach(d => d.classList.add('hidden'));
+            document.getElementById(`prob-${level}`).classList.remove('hidden');
+            currentLevel = level;
+            editor.setValue(solutions[level] || defaults[document.getElementById('langSelect').value], -1);
+        }
+
+        async function autosave() {
+            const statusEl = document.getElementById('saveStatus');
+            statusEl.innerHTML = '<i class="fas fa-sync fa-spin"></i> Saving...';
+            try {
+                await fetch("/api/autosave", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        assignment_id: ASSIGNMENT_ID, 
+                        level: currentLevel, 
+                        solution: editor.getValue() 
+                    })
+                });
+                statusEl.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> Saved';
+            } catch (err) { statusEl.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline'; }
+        }
+        setInterval(autosave, 30000);
+
+        async function runCode() {
+            const terminal = document.getElementById('terminal');
+            const outputBox = document.getElementById('outputBox');
+            terminal.classList.add('open');
+            outputBox.innerText = "Running code...";
+            try {
+                const res = await fetch("/api/run_code", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        code: editor.getValue(), 
+                        language: document.getElementById('langSelect').value,
+                        sample_input: "" 
+                    })
+                });
+                const data = await res.json();
+                outputBox.innerText = data.output || data.error || "No output returned.";
+            } catch (e) { outputBox.innerText = "Execution failed."; }
+        }
+
+        function finalSubmit(isAuto = false) {
+            if(!isAuto && !confirm("Submit all 3 solutions?")) return;
+            solutions[currentLevel] = editor.getValue();
+            document.getElementById('sol-easy-field').value = solutions.easy;
+            document.getElementById('sol-med-field').value = solutions.medium;
+            document.getElementById('sol-hard-field').value = solutions.hard;
+            document.getElementById('submitForm').submit();
+        }
+
+        const dl = ASSIGNMENT_DATA.dataset.deadline;
+        if (dl) {
+            const deadline = new Date(dl).getTime();
+            const timer = setInterval(() => {
+                const diff = deadline - new Date().getTime();
+                if (diff <= 0) { clearInterval(timer); finalSubmit(); return; }
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                document.getElementById("timer").innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        // ANTI-CHEAT: Detect Tab Switching & Force Submit
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") {
+                fetch("/api/log_activity", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        assignment_id: ASSIGNMENT_ID, 
+                        event_type: "Tab Switched - AUTO SUBMIT" 
+                    })
+                });
+                alert("Anti-cheat Alert: Tab switching detected. Your assessment has been automatically submitted.");
+                finalSubmit(true); 
+            }
+        });
+    </script>
+</body>
+</html>

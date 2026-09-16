@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Logged Out</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="logout-body">
+
+<div class="logout-wrapper">
+
+    <!-- LEFT SIDE -->
+    <div class="logout-left">
+        <div class="logout-left-content">
+            <h1>⚡ SkillHire</h1>
+            <p>Where Skills Speak Louder Than Resumes</p>
+
+            <div class="logout-features">
+                <div class="logout-feature-item">
+                    <i class="fas fa-code"></i>
+                    <span>Skill-Based Hiring</span>
+                </div>
+                <div class="logout-feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Fair Evaluation</span>
+                </div>
+                <div class="logout-feature-item">
+                    <i class="fas fa-trophy"></i>
+                    <span>Merit-Based Selection</span>
+                </div>
+            </div>
+
+            <div class="logout-stats">
+                <div class="logout-stat">
+                    <span class="logout-stat-num">500+</span>
+                    <span class="logout-stat-label">Students</span>
+                </div>
+                <div class="logout-stat">
+                    <span class="logout-stat-num">50+</span>
+                    <span class="logout-stat-label">Companies</span>
+                </div>
+                <div class="logout-stat">
+                    <span class="logout-stat-num">95%</span>
+                    <span class="logout-stat-label">Success</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="logout-right">
+        <div class="logout-card">
+
+            <!-- SUCCESS ICON WITH ANIMATION -->
+            <div class="logout-success-icon">
+                <div class="logout-circle">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="logout-ripple"></div>
+            </div>
+
+            <h2>You have been logged out successfully.</h2>
+            <p>Thank you for using SkillHire. See you again!</p>
+
+            <!-- COUNTDOWN -->
+            <div class="logout-countdown">
+                <span>Redirecting in </span>
+                <span id="countdown">5</span>
+                <span> seconds...</span>
+            </div>
+
+            <!-- PROGRESS BAR -->
+            <div class="logout-progress">
+                <div class="logout-progress-fill" id="progressFill"></div>
+            </div>
+
+            <a href="{{ url_for('login') }}" class="btn-primary logout-btn">
+                <i class="fas fa-sign-in-alt"></i> Back to Login
+            </a>
+
+            <p class="logout-register">
+                New here?
+                <a href="{{ url_for('register') }}">Create an account</a>
+            </p>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ── COUNTDOWN TIMER ────────────────────────────
+    let seconds = 5;
+    const countdownEl  = document.getElementById('countdown');
+    const progressFill = document.getElementById('progressFill');
+
+    const interval = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+
+        // Update progress bar
+        const percent = ((5 - seconds) / 5) * 100;
+        progressFill.style.width = percent + '%';
+
+        if (seconds <= 0) {
+            clearInterval(interval);
+            window.location.href = "{{ url_for('login') }}";
+        }
+    }, 1000);
+</script>
+
+</body>
+</html>

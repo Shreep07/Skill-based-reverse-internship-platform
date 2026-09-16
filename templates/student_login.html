@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login - SkillHire</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-body" style="background: radial-gradient(circle at top right, var(--accent) 0%, var(--bg-deep) 100%);">
+
+    <div class="auth-container">
+        <!-- Student Panel -->
+        <div class="auth-left" style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);">
+            <div style="z-index: 2; width: 100%;">
+                <div style="font-size: 48px; font-weight: 900; letter-spacing: -2px; color: #fff; margin-bottom: 10px;">⚡ SKILLHIRE</div>
+                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 3px; color: rgba(255,255,255,0.7); font-weight: 700; margin-bottom: 40px;">Powering Future Careers</div>
+                
+                <div class="quote-carousel" style="min-height: 120px; border-left: 4px solid var(--primary); padding-left: 24px; background: rgba(0,0,0,0.1); padding: 20px; border-radius: 0 16px 16px 0;">
+                    <p id="studentQuote" style="font-size: 20px; font-weight: 600; font-style: italic; color: #fff; line-height: 1.5; transition: opacity 0.5s ease;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="auth-right">
+            <div class="auth-box">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 30px;">
+                    <span style="background: var(--primary); color: #fff; padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 12px;">STUDENT</span>
+                    <h2 style="margin: 0; font-size: 24px;">Welcome Back</h2>
+                </div>
+
+
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('student_login') }}">
+                    <div class="form-group">
+                        <label>Student Email</label>
+                        <input type="email" name="email" placeholder="student@university.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="••••••••" required>
+                        <div style="text-align: right; margin-top: 5px;">
+                            <a href="{{ url_for('forgot_password') }}" style="font-size: 12px; color: var(--text-muted); text-decoration: none;">Forgot Password?</a>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, var(--primary), var(--accent));">Sign In as Student</button>
+
+
+                </form>
+
+                <div class="auth-footer">
+                    New candidate? <a href="{{ url_for('student_register') }}" style="color: #6366f1;">Create Student Account</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <script>
+        const quotes = [
+            "Your code is your ultimate resume. Build something incredible.",
+            "Where logic meets opportunity. Start your journey today.",
+            "We don't care where you studied. We care what you can solve.",
+            "Every line of code you write brings you closer to your dream career.",
+            "Unlock your potential through pure technical talent."
+        ];
+        let idx = 0;
+        const quoteEl = document.getElementById('studentQuote');
+        function updateQuote() {
+            quoteEl.style.opacity = 0;
+            setTimeout(() => {
+                quoteEl.textContent = `"${quotes[idx]}"`;
+                quoteEl.style.opacity = 1;
+                idx = (idx + 1) % quotes.length;
+            }, 500);
+        }
+        updateQuote();
+        setInterval(updateQuote, 5000);
+    </script>
+</body>
+</html>
+

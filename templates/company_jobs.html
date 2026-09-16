@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHire - Manage Job Postings</title>
+    <meta name="description" content="Manage your company's job postings on SkillHire.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ SkillHire</div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('company_dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{{ url_for('post_job') }}"><i class="fas fa-plus-circle"></i> Post Job</a></li>
+        <li><a href="{{ url_for('company_jobs') }}" class="active"><i class="fas fa-briefcase"></i> My Jobs</a></li>
+        <li><a href="{{ url_for('post_task') }}"><i class="fas fa-code"></i> Post Task</a></li>
+        <li><a href="{{ url_for('manage_tasks') }}"><i class="fas fa-tasks"></i> Manage Tasks</a></li>
+        <li><a href="{{ url_for('view_submissions') }}"><i class="fas fa-users"></i> Submissions</a></li>
+        <li><a href="{{ url_for('reports') }}"><i class="fas fa-chart-pie"></i> Reports</a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+
+    <div class="topbar">
+        <div>
+            <h2><i class="fas fa-briefcase" style="color:var(--primary);margin-right:8px;"></i>My Job Postings</h2>
+            <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Manage openings and view applicants</p>
+        </div>
+        <div class="topbar-right">
+            <a href="{{ url_for('post_job') }}" class="btn-apply" style="width:auto;padding:10px 18px;font-size:13px;">
+                <i class="fas fa-plus"></i> Post New Job
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }}">{{ msg }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    {% if jobs %}
+    <div class="job-grid">
+        {% for job in jobs %}
+        <div class="job-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div class="job-title">{{ job.title }}</div>
+                {% if job.status == 'Open' %}
+                    <span class="status-badge status-active">Open</span>
+                {% else %}
+                    <span class="status-badge status-draft">Closed</span>
+                {% endif %}
+            </div>
+            <div class="job-desc">
+                {{ job.description[:120] }}{% if job.description|length > 120 %}...{% endif %}
+            </div>
+
+            {% if job.skills %}
+            <div class="skill-tags">
+                {% for sk in job.skills.split(',') %}
+                    {% if sk.strip() %}<span class="skill-tag">{{ sk.strip() }}</span>{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="job-meta">
+                <span class="job-meta-item"><i class="fas fa-map-marker-alt"></i>{{ job.location }}</span>
+                <span class="job-meta-item"><i class="fas fa-clock"></i>{{ job.job_type }}</span>
+                {% if job.salary %}<span class="job-meta-item"><i class="fas fa-rupee-sign"></i>{{ job.salary }}</span>{% endif %}
+                <span class="job-meta-item"><i class="fas fa-users"></i>{{ app_counts[job.id] }} applicant{{ 's' if app_counts[job.id] != 1 else '' }}</span>
+            </div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <a href="{{ url_for('job_applicants', job_id=job.id) }}" class="btn-apply" style="flex:1;text-align:center;font-size:12px;padding:9px 12px;">
+                    <i class="fas fa-users"></i> View Applicants ({{ app_counts[job.id] }})
+                </a>
+                <a href="{{ url_for('toggle_job', job_id=job.id) }}" class="btn-secondary" style="font-size:12px;padding:9px 12px;">
+                    {% if job.status == 'Open' %}<i class="fas fa-pause"></i> Close{% else %}<i class="fas fa-play"></i> Reopen{% endif %}
+                </a>
+                <a href="{{ url_for('delete_job', job_id=job.id) }}" class="btn-danger"
+                   onclick="return confirm('Delete this job posting and all its applications?')"
+                   style="font-size:12px;padding:9px 12px;">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+
+            <div style="font-size:11px;color:var(--text-muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--border-light);">
+                <i class="fas fa-calendar-alt"></i> Posted {{ job.posted_at[:10] if job.posted_at else 'N/A' }}
+                &nbsp;·&nbsp;
+                <i class="fas fa-user-friends"></i> {{ job.openings }} opening{{ 's' if job.openings != 1 else '' }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="empty-state">
+            <i class="fas fa-briefcase"></i>
+            <h3>No Job Postings Yet</h3>
+            <p>Post your first job opening so students can find and apply to it!</p>
+            <a href="{{ url_for('post_job') }}" class="btn-primary" style="display:inline-block;width:auto;margin-top:16px;padding:12px 24px;">
+                <i class="fas fa-plus"></i> Post Your First Job
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+const btn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+btn.addEventListener('click', () => {
+    btn.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('visible');
+});
+overlay.addEventListener('click', () => {
+    btn.classList.remove('open');
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
+});
+</script>
+</body>
+</html>
